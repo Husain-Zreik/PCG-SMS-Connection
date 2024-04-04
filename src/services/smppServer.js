@@ -1,5 +1,5 @@
-var smpp = require('smpp');
-var server = smpp.createServer({
+import { createServer, ESME_RBINDFAIL } from 'smpp';
+var server = createServer({
 	debug: true,
 	rejectUnauthorized: false
 }, function (session) {
@@ -11,7 +11,7 @@ var server = smpp.createServer({
 		checkAsyncUserPass(pdu.system_id, pdu.password, function (err) {
 			if (err) {
 				session.send(pdu.response({
-					command_status: smpp.ESME_RBINDFAIL
+					command_status: ESME_RBINDFAIL
 				}));
 				session.close();
 				return;
