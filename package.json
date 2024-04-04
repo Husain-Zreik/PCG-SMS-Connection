@@ -1,0 +1,16 @@
+{
+  "name": "pcg-sms-connection",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "mysql": "^2.18.1",
+    "smpp": "^0.6.0-rc.4"
+  }
+}
