@@ -1,25 +1,33 @@
-import { createServer, ESME_RBINDFAIL } from 'smpp';
+import { createServer } from 'smpp';
+
 var server = createServer({
 	debug: true,
-	rejectUnauthorized: false
+	rejectUnauthorized: false,
 }, function (session) {
 	session.on('error', function (err) {
-		console.log('Something ocurred, not listening for this event will terminate the program');
+		console.error('An error occurred:', err);
+		// Optionally handle the error or terminate the program
 	});
+
+	console.log("New SMPP session opened");
+
 	session.on('bind_transceiver', function (pdu) {
 		session.pause();
-		checkAsyncUserPass(pdu.system_id, pdu.password, function (err) {
-			if (err) {
-				session.send(pdu.response({
-					command_status: ESME_RBINDFAIL
-				}));
-				session.close();
-				return;
-			}
+		console.log("Received bind_transceiver request:", pdu);
+
+		// Implement authentication logic here
+		if (pdu.system_id == 'alaav' && pdu.password == 'alaav') {
+			// Accept the connection
 			session.send(pdu.response());
 			session.resume();
-		});
+		} else {
+			// Reject the connection
+			session.send(pdu.response({ command_status: ESME_RBINDFAIL }));
+			session.close();
+		}
 	});
 });
 
-server.listen(2775);
+server.listen(2775, function () {
+	console.log('SMPP server listening on port 2775');
+});

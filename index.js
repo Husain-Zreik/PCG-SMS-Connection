@@ -2,9 +2,9 @@ import connection from './config/dbConnection.js';
 import express from 'express';
 import cors from 'cors';
 
-const IP_ADDRESS = '34.89.33.119';
-const app = express();
+const ipAddress = '45.140.185.57';
 const port = 3000;
+const app = express();
 
 app.use(cors());
 
@@ -19,7 +19,7 @@ app.listen(port, (err) => {
         console.error('Error starting server:', err);
         return;
     }
-    console.log(`Server running at http://${IP_ADDRESS}:${port}/`);
+    console.log(`Server running at http://${ipAddress}:${port}/`);
 });
 
 // Handle database connection error
