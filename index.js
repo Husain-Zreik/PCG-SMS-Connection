@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors';
 
 const ipAddress = '45.140.185.57';
-const port = 3000;
+const port = 3007;
 const app = express();
 
 app.use(cors());

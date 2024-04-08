@@ -1,4 +1,5 @@
 import { createServer } from 'smpp';
+import smpp from 'smpp';
 
 var server = createServer({
 	debug: true,
@@ -16,13 +17,13 @@ var server = createServer({
 		console.log("Received bind_transceiver request:", pdu);
 
 		// Implement authentication logic here
-		if (pdu.system_id == 'alaav' && pdu.password == 'alaav') {
+		if (pdu.system_id == 'alaac' && pdu.password == 'alaac'|| pdu.system_id == 'alaav' && pdu.password == 'alaav' ) {
 			// Accept the connection
 			session.send(pdu.response());
 			session.resume();
 		} else {
 			// Reject the connection
-			session.send(pdu.response({ command_status: ESME_RBINDFAIL }));
+			session.send(pdu.response({ command_status: smpp.ESME_RBINDFAIL }));
 			session.close();
 		}
 	});
