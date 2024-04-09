@@ -3,12 +3,14 @@ import { smppService, smppPort, smppTransmitterId, smppTransmitterPassword } fro
 import smpp from 'smpp';
 
 
-function connectToServer() {
+export function connectToServer() {
     var session = smpp.connect({
         url: 'http://34.89.33.119:2770',
         //url: 'http://192.168.1.13:2775',
         //url: 'http://45.140.185.57:2775',
         //url: 'smpp://185.252.100.195:2775',
+        //url: 'smpp://45.140.185.57:2775',
+
         auto_enquire_link_period: 10000,
         debug: true
     });
