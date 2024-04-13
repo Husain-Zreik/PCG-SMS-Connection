@@ -5,7 +5,7 @@ export function sendSMS(req, res) {
     console.log("Request data:", req.body);
 
     const session = smpp.connect({
-        url: `smpp://${req.body.customer.ip}:${req.body.customer.port}`,
+        url: `smpp://${req.body.vendor.ip}:${req.body.vendor.port}`,
         auto_enquire_link_period: 10000,
         debug: true
     });
@@ -15,8 +15,8 @@ export function sendSMS(req, res) {
 
     session.on('connect', function () {
         session.bind_transceiver({
-            system_id: req.body.customer.username,
-            password: req.body.customer.password,
+            system_id: req.body.vendor.username,
+            password: req.body.vendor.password,
         }, function (bindPdu) {
             if (bindPdu.command_status === 0) {
                 const messages = req.body.sent_To;
