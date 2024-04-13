@@ -3,6 +3,7 @@ import smsRouter from './src/routes/smsRoutes.js';
 import bodyParser from 'body-parser';
 import express from 'express';
 import cors from 'cors';
+import http from 'http';
 
 const ipAddress = process.env.NODE_HOST;
 const port = process.env.NODE_PORT;
@@ -13,7 +14,9 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use('/sms', smsRouter);
 
-app.listen(port, (err) => {
+const server = http.createServer(app);
+
+server.listen(port, ipAddress, (err) => {
     if (err) {
         console.error('Error starting server:', err);
         return;
