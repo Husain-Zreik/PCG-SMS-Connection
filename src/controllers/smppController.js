@@ -18,6 +18,7 @@ export function sendSMS(req, res) {
             system_id: req.body.vendor.username,
             password: req.body.vendor.password,
         }, function (bindPdu) {
+	    console.log("bindPdu", bindPdu);
             if (bindPdu.command_status === 0) {
                 const messages = req.body.sent_To;
 
@@ -26,8 +27,10 @@ export function sendSMS(req, res) {
                 messages.forEach((message, index) => {
                     session.submit_sm({
                         destination_addr: message.number,
+			short_message_id: message.id,
                         short_message: message.content
                     }, function (submitPdu) {
+			console.log("submit_sm", submit_sm);
                         if (submitPdu.command_status === 0) {
                             console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
                             messagesSuccess++;
