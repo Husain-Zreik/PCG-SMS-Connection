@@ -15,8 +15,10 @@ export function sendSMS(req, res) {
 
     session.on('connect', function () {
         session.bind_transceiver({
-            system_id: req.body.vendor.username,
-            password: req.body.vendor.password,
+            // system_id: req.body.vendor.username,
+            // password: req.body.vendor.password,
+            system_id: 'alaac',
+            password: 'alaac',
         }, function (bindPdu) {
 	    console.log("bindPdu", bindPdu);
             if (bindPdu.command_status === 0) {
