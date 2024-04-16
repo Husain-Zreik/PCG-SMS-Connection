@@ -27,7 +27,7 @@ export function sendSMS(req, res) {
                 messages.forEach((message, index) => {
                     session.submit_sm({
                         destination_addr: message.number,
-			short_message_id: message.id,
+			//short_message_id: message.id,
                         short_message: message.content
                     }, function (submitPdu) {
 			console.log("submit_sm", submit_sm);
