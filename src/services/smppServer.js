@@ -57,6 +57,16 @@ export default function startSMPPServer() {
 	});
 }
 
+let counter = 0;
+
+function generateMessageID() {
+	const timestamp = new Date().toISOString().replace(/\D/g, '').slice(0, -3);
+	counter++;
+
+	return `${timestamp}${counter.toString().padStart(3, '0')}`;
+}
+
+
 function updateDeliveredRecord(messageId) {
 	const updateQuery = `UPDATE sent_to SET is_delivered = 1 WHERE id = ?`;
 
