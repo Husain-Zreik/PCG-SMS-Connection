@@ -28,10 +28,41 @@ export default function startSMPPServer() {
 				session.close();
 			}
 		});
+
+		session.on('deliver_sm', function (pdu) {
+			console.log(pdu);
+			const sourceAddr = pdu.source_addr;
+			const messageContent = pdu.short_message.message;
+			const messageId = pdu.message_id;
+
+			console.log(`Received SMS from ${sourceAddr}: ${messageContent}`);
+
+			updateDeliveredRecord(messageId);
+
+			session.deliver_sm_resp({
+				sequence_number: pdu.sequence_number,
+				command_status: 0
+			});
+		});
+
+
 	});
 
 	server.listen(2775, function () {
 		console.log('SMPP server listening on port 2775');
 	});
 }
+
+function updateDeliveredRecord(messageId) {
+	const updateQuery = `UPDATE sent_to SET is_delivered = 1 WHERE id = ?`;
+
+	connection.query(updateQuery, [messageId], (error, results) => {
+		if (error) {
+			console.error(`Error updating SentTo record with ID ${messageId}:`, error);
+		} else {
+			console.log(`SentTo record with ID ${messageId} delivered successfully.`);
+		}
+	});
+}
+
 startSMPPServer();
