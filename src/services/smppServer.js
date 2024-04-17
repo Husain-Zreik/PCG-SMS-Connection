@@ -23,7 +23,6 @@ export default function startSMPPServer() {
 			}
 
 			session.on('submit_sm', function (pdu) {
-				console.log('submit_sm', pdu);
 				const messageID = generateMessageID();
 				session.send(pdu.response({ message_id: messageID }));
 			});
