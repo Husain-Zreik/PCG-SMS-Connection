@@ -30,24 +30,22 @@ export function sendSMS(req, res) {
                             destination_addr: message.number,
                             short_message: message.content,
                         }, function (submitPdu) {
-                            console.log("submit_sm", submitPdu, "\n\n");
-                            console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
-                            if (submitPdu.command_status === 0) {
+                            console.log("\n\nsubmit_sm", submitPdu, "\n\n");
+                            if (submitPdu.command_status !== 255) {
+                                // console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
                                 messagesSuccess++;
-
-                                updateSentRecord(message.id, 'sent');
+                                updateSentRecord(message.id, 'sent', submitPdu.message_id);
 
                                 if (messagesSuccess === messagesSent) {
                                     console.log(`${messagesSuccess} out of ${messagesSent} messages sent successfully`);
                                     res.status(200).json({ success: messagesSuccess, total: messagesSent });
                                 }
                             } else {
-                                console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
+                                // console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
                                 if (index === messagesSent - 1) {
                                     res.status(500).json({ error: `Error sending SMS to ${message.number}` });
                                 }
-
-                                updateSentRecord(message.id, 'failed');
+                                updateSentRecord(message.id, 'failed', submitPdu.message_id);
                             }
                         });
                     }, req.body.delay * 1000);
@@ -68,8 +66,8 @@ export function sendSMS(req, res) {
         console.log('Connection closed');
     });
 
-    function updateSentRecord(sentToId, status) {
-        const updateQuery = `UPDATE sent_to SET status = ? WHERE id = ?`;
+    function updateSentRecord(sentToId, status, serverMessageId) {
+        const updateQuery = `UPDATE sent_to SET status = ?, server_message_id = ? WHERE id = ?`;
 
         connection.query(updateQuery, [status, sentToId], (error, results) => {
             if (error) {
