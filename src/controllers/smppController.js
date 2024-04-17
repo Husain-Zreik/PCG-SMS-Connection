@@ -22,34 +22,34 @@ export function sendSMS(req, res) {
             if (bindPdu.command_status === 0) {
                 const messages = req.body.sent_To;
 
-                messagesSent = messages.length;
+                messagesNumber = messages.length;
 
                 messages.forEach((message, index) => {
+
                     setTimeout(() => {
                         session.submit_sm({
                             destination_addr: message.number,
                             short_message: message.content,
                         }, function (submitPdu) {
                             console.log("\n\nsubmit_sm", submitPdu, "\n\n");
-                            if (submitPdu.command_status !== 255) {
-                                // console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
+                            if (submitPdu.command_status != 255) {
+                                console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
                                 messagesSuccess++;
                                 updateSentRecord(message.id, 'sent', submitPdu.message_id);
 
-                                if (messagesSuccess === messagesSent) {
-                                    console.log(`${messagesSuccess} out of ${messagesSent} messages sent successfully`);
-                                    res.status(200).json({ success: messagesSuccess, total: messagesSent });
-                                }
                             } else {
-                                // console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
-                                if (index === messagesSent - 1) {
-                                    res.status(500).json({ error: `Error sending SMS to ${message.number}` });
-                                }
+                                console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
                                 updateSentRecord(message.id, 'failed', submitPdu.message_id);
                             }
                         });
                     }, req.body.delay * 1000);
+
+                    if (index === messagesNumber) {
+                        console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
+                        res.status(200).json({ success: messagesSuccess, total: messagesNumber });
+                    }
                 });
+
             } else {
                 console.error("Error binding to SMPP server:", bindPdu.command_status);
                 res.status(500).json({ error: 'Error binding to SMPP server' });
