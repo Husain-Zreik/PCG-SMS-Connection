@@ -10,7 +10,7 @@ export function sendSMS(req, res) {
         debug: true
     });
 
-    let messagesSent = 0;
+    let messagesNumber = 0;
     let messagesSuccess = 0;
 
     session.on('connect', function () {
