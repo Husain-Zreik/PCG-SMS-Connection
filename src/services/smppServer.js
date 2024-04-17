@@ -35,15 +35,15 @@ export default function startSMPPServer() {
 			});
 
 
-			session.deliver_sm({
-				destination_addr: sourceAddr,
-				short_message: messageContent,
-			}, function (deliverPdu) {
-				console.log("\n\deliverPdu", deliverPdu, "\n\n");
-				console.log(`Received SMS from ${sourceAddr}: ${messageContent}`);
+			// session.deliver_sm({
+			// 	destination_addr: sourceAddr,
+			// 	short_message: messageContent,
+			// }, function (deliverPdu) {
+			// 	console.log("\n\deliverPdu", deliverPdu, "\n\n");
+			// 	console.log(`Received SMS from ${sourceAddr}: ${messageContent}`);
 
-				updateDeliveredRecord(messageId);
-			});
+			// 	updateDeliveredRecord(messageId);
+			// });
 
 
 			session.on('enquire_link', function (pdu) {
