@@ -29,7 +29,6 @@ export function sendSMS(req, res) {
                         session.submit_sm({
                             destination_addr: message.number,
                             short_message: message.content,
-                            sm_default_msg_id: message.id,
                         }, function (submitPdu) {
                             console.log("submit_sm", submitPdu, "\n\n");
                             console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
