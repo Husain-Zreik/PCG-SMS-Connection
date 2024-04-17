@@ -43,6 +43,11 @@ export default function startSMPPServer() {
 				});
 			});
 
+			session.on('submit_sm', function (pdu) {
+				console.log('submit_sm', pdu);
+				session.send(pdu.response());
+			});
+
 			session.on('enquire_link', function (pdu) {
 				console.log('ENQUIRE_LINK', pdu);
 				session.send(pdu.response());
