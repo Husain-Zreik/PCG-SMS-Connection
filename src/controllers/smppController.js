@@ -36,12 +36,11 @@ export function sendSMS(req, res) {
                                 console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
                                 updateSentRecord(message.id, 'failed', submitPdu.message_id);
                             }
-
-                            if (index === messagesNumber) {
-                                console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
-                                res.status(200).json({ success: messagesSuccess, total: messagesNumber });
-                            }
                         });
+                        if (index === messagesNumber) {
+                            console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
+                            res.status(200).json({ success: messagesSuccess, total: messagesNumber });
+                        }
                     }, req.body.delay * 1000);
                 });
 
