@@ -1,5 +1,5 @@
 import { createServer } from 'smpp';
-import smpp from 'smpp';
+import connection from '../../config/dbConnection.js';
 
 export default function startSMPPServer() {
 	var server = createServer({
@@ -17,31 +17,32 @@ export default function startSMPPServer() {
 			session.pause();
 			console.log("Received bind_transceiver request:", pdu);
 
-			// Implement authentication logic here
 			if ((pdu.system_id == 'alaac' && pdu.password == 'alaac') || (pdu.system_id == 'alaav' && pdu.password == 'alaav')) {
-				// Accept the connection
 				session.send(pdu.response());
 				session.resume();
 			} else {
-				// Reject the connection
 				session.send(pdu.response({ command_status: smpp.ESME_RBINDFAIL }));
 				session.close();
 			}
-			session.on('submit_sm', function (submitPdu) {
-				console.log("Received submit_sm request:", submitPdu);
 
-				const sourceAddr = submitPdu.source_addr;
-				const messageContent = submitPdu.short_message.message;
-				const messageId = submitPdu.message_id;
+			session.on('deliver_sm', function (pdu) {
+				console.log('DELIVER_SM', pdu);
+				console.log(pdu.short_message);
+
+				const sourceAddr = pdu.source_addr;
+				const messageContent = pdu.short_message.message;
+				const messageId = pdu.message_id; // Make sure this property is correct
 
 				console.log(`Received SMS from ${sourceAddr}: ${messageContent}`);
 
 				updateDeliveredRecord(messageId);
+
+				session.deliver_sm_resp({
+					sequence_number: pdu.sequence_number,
+					command_status: 0
+				});
 			});
 		});
-
-
-
 	});
 
 	server.listen(2775, function () {
