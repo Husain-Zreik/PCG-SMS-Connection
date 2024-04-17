@@ -25,31 +25,33 @@ export function sendSMS(req, res) {
                 messagesSent = messages.length;
 
                 messages.forEach((message, index) => {
-                    session.submit_sm({
-                        destination_addr: message.number,
-                        short_message: message.content,
-                        sm_default_msg_id: message.id,
-                    }, function (submitPdu) {
-                        console.log("submit_sm", submit_sm);
-                        if (submitPdu.command_status === 0) {
-                            console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
-                            messagesSuccess++;
+                    setTimeout(() => {
+                        session.submit_sm({
+                            destination_addr: message.number,
+                            short_message: message.content,
+                            sm_default_msg_id: message.id,
+                        }, function (submitPdu) {
+                            console.log("submit_sm", submit_sm);
+                            if (submitPdu.command_status === 0) {
+                                console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
+                                messagesSuccess++;
 
-                            updateSentRecord(message.id, 'sent');
+                                updateSentRecord(message.id, 'sent');
 
-                            if (messagesSuccess === messagesSent) {
-                                console.log(`${messagesSuccess} out of ${messagesSent} messages sent successfully`);
-                                res.status(200).json({ success: messagesSuccess, total: messagesSent });
+                                if (messagesSuccess === messagesSent) {
+                                    console.log(`${messagesSuccess} out of ${messagesSent} messages sent successfully`);
+                                    res.status(200).json({ success: messagesSuccess, total: messagesSent });
+                                }
+                            } else {
+                                console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
+                                if (index === messagesSent - 1) {
+                                    res.status(500).json({ error: `Error sending SMS to ${message.number}` });
+                                }
+
+                                updateSentRecord(message.id, 'failed');
                             }
-                        } else {
-                            console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
-                            if (index === messagesSent - 1) {
-                                res.status(500).json({ error: `Error sending SMS to ${message.number}` });
-                            }
-
-                            updateSentRecord(message.id, 'failed');
-                        }
-                    });
+                        });
+                    }, req.body.delay);
                 });
             } else {
                 console.error("Error binding to SMPP server:", bindPdu.command_status);
