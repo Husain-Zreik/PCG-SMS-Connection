@@ -31,9 +31,9 @@ export function sendSMS(req, res) {
                             short_message: message.content,
                             sm_default_msg_id: message.id,
                         }, function (submitPdu) {
-                            console.log("submit_sm", submit_sm);
+                            console.log("submit_sm", submitPdu, "\n\n");
+                            console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
                             if (submitPdu.command_status === 0) {
-                                console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
                                 messagesSuccess++;
 
                                 updateSentRecord(message.id, 'sent');
