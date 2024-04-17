@@ -25,31 +25,28 @@ export default function startSMPPServer() {
 				session.close();
 			}
 
-			session.on('deliver_sm', function (pdu) {
-				console.log('DELIVER_SM', pdu);
-				console.log(pdu.short_message);
-
-				const sourceAddr = pdu.source_addr;
-				const messageContent = pdu.short_message.message;
-				const messageId = pdu.message_id; // Make sure this property is correct
-
-				console.log(`Received SMS from ${sourceAddr}: ${messageContent}`);
-
-				updateDeliveredRecord(messageId);
-
-				session.deliver_sm_resp({
-					sequence_number: pdu.sequence_number,
-					command_status: 0
-				});
-			});
+			let sourceAddr;
+			let messageContent;
 
 			session.on('submit_sm', function (pdu) {
 				console.log('submit_sm', pdu);
-				session.send(pdu.response());
+				const messageID = generateMessageID();
+				session.send(pdu.response({ message_id: messageID }));
 			});
 
+
+			session.deliver_sm({
+				destination_addr: sourceAddr,
+				short_message: messageContent,
+			}, function (deliverPdu) {
+				console.log("\n\deliverPdu", deliverPdu, "\n\n");
+				console.log(`Received SMS from ${sourceAddr}: ${messageContent}`);
+
+				updateDeliveredRecord(messageId);
+			});
+
+
 			session.on('enquire_link', function (pdu) {
-				console.log('ENQUIRE_LINK', pdu);
 				session.send(pdu.response());
 			});
 		});

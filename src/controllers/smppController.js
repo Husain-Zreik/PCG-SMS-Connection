@@ -31,7 +31,9 @@ export function sendSMS(req, res) {
                             destination_addr: message.number,
                             short_message: message.content,
                         }, function (submitPdu) {
+
                             console.log("\n\nsubmit_sm", submitPdu, "\n\n");
+
                             if (submitPdu.command_status != 255) {
                                 console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
                                 messagesSuccess++;
