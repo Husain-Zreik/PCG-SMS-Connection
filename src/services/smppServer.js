@@ -8,10 +8,7 @@ export default function startSMPPServer() {
 	}, function (session) {
 		session.on('error', function (err) {
 			console.error('An error occurred:', err);
-			// Optionally handle the error or terminate the program
 		});
-
-		console.log("New SMPP session opened");
 
 		session.on('bind_transceiver', function (pdu) {
 			session.pause();
@@ -25,26 +22,27 @@ export default function startSMPPServer() {
 				session.close();
 			}
 
-			let sourceAddr;
-			let messageContent;
-
 			session.on('submit_sm', function (pdu) {
 				console.log('submit_sm', pdu);
 				const messageID = generateMessageID();
 				session.send(pdu.response({ message_id: messageID }));
 			});
 
+			session.on('deliver_sm', function (deliverPdu) {
+				console.log('deliver_sm', deliverPdu);
+				const sourceAddr = deliverPdu.source_addr;
+				const messageContent = deliverPdu.short_message.message;
+				const messageId = deliverPdu.message_id;
 
-			// session.deliver_sm({
-			// 	destination_addr: sourceAddr,
-			// 	short_message: messageContent,
-			// }, function (deliverPdu) {
-			// 	console.log("\n\deliverPdu", deliverPdu, "\n\n");
-			// 	console.log(`Received SMS from ${sourceAddr}: ${messageContent}`);
+				console.log(`Received SMS from ${sourceAddr}: ${messageContent}`);
 
-			// 	updateDeliveredRecord(messageId);
-			// });
+				updateDeliveredRecord(messageId);
 
+				session.deliver_sm_resp({
+					sequence_number: deliverPdu.sequence_number,
+					command_status: 0
+				});
+			});
 
 			session.on('enquire_link', function (pdu) {
 				session.send(pdu.response());
