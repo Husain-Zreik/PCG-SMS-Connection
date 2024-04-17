@@ -27,23 +27,23 @@ export default function startSMPPServer() {
 				session.send(pdu.response({ command_status: smpp.ESME_RBINDFAIL }));
 				session.close();
 			}
-		});
+			session.on('deliver_sm', function (pdu) {
+				console.log(pdu);
+				const sourceAddr = pdu.source_addr;
+				const messageContent = pdu.short_message.message;
+				const messageId = pdu.message_id;
 
-		session.on('deliver_sm', function (pdu) {
-			console.log(pdu);
-			const sourceAddr = pdu.source_addr;
-			const messageContent = pdu.short_message.message;
-			const messageId = pdu.message_id;
+				console.log(`Received SMS from ${sourceAddr}: ${messageContent}`);
 
-			console.log(`Received SMS from ${sourceAddr}: ${messageContent}`);
+				updateDeliveredRecord(messageId);
 
-			updateDeliveredRecord(messageId);
-
-			session.deliver_sm_resp({
-				sequence_number: pdu.sequence_number,
-				command_status: 0
+				session.deliver_sm_resp({
+					sequence_number: pdu.sequence_number,
+					command_status: 0
+				});
 			});
 		});
+
 
 
 	});
