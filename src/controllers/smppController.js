@@ -51,7 +51,7 @@ export function sendSMS(req, res) {
                                 updateSentRecord(message.id, 'failed');
                             }
                         });
-                    }, req.body.delay);
+                    }, req.body.delay * 1000);
                 });
             } else {
                 console.error("Error binding to SMPP server:", bindPdu.command_status);
