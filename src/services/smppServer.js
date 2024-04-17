@@ -42,6 +42,11 @@ export default function startSMPPServer() {
 					command_status: 0
 				});
 			});
+
+			session.on('enquire_link', function (pdu) {
+				console.log('ENQUIRE_LINK', pdu);
+				session.send(pdu.response());
+			});
 		});
 	});
 
