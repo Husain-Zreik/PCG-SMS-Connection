@@ -69,7 +69,7 @@ export function sendSMS(req, res) {
     function updateSentRecord(sentToId, status, serverMessageId) {
         const updateQuery = `UPDATE sent_to SET status = ?, server_message_id = ? WHERE id = ?`;
 
-        connection.query(updateQuery, [status, sentToId], (error, results) => {
+        connection.query(updateQuery, [status, serverMessageId, sentToId], (error, results) => {
             if (error) {
                 console.error(`Error updating SentTo record with ID ${sentToId}:`, error);
             } else {
