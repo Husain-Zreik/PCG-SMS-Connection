@@ -1,4 +1,4 @@
-import startSMPPServer from './src/services/smppServer.js';
+//import startSMPPServer from './src/services/smppServer.js';
 import connection from './config/dbConnection.js';
 import smsRouter from './src/routes/smsRoutes.js';
 import bodyParser from 'body-parser';
@@ -25,7 +25,7 @@ server.listen(port, ipAddress, (err) => {
     console.log(`HTTP Server running at http://${ipAddress}:${port}/`);
 
     // Once the HTTP server is started, start the SMPP server
-    startSMPPServer();
+    // startSMPPServer();
 });
 
 connection.connect((err) => {

@@ -34,3 +34,4 @@ export default function startSMPPServer() {
 		console.log('SMPP server listening on port 2775');
 	});
 }
+startSMPPServer();

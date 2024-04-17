@@ -15,12 +15,10 @@ export function sendSMS(req, res) {
 
     session.on('connect', function () {
         session.bind_transceiver({
-            // system_id: req.body.vendor.username,
-            // password: req.body.vendor.password,
-            system_id: 'alaac',
-            password: 'alaac',
+            system_id: req.body.vendor.username,
+            password: req.body.vendor.password,
         }, function (bindPdu) {
-	    console.log("bindPdu", bindPdu);
+            console.log("bindPdu", bindPdu);
             if (bindPdu.command_status === 0) {
                 const messages = req.body.sent_To;
 
@@ -29,10 +27,10 @@ export function sendSMS(req, res) {
                 messages.forEach((message, index) => {
                     session.submit_sm({
                         destination_addr: message.number,
-			//short_message_id: message.id,
-                        short_message: message.content
+                        short_message: message.content,
+                        sm_default_msg_id: message.id,
                     }, function (submitPdu) {
-			console.log("submit_sm", submit_sm);
+                        console.log("submit_sm", submit_sm);
                         if (submitPdu.command_status === 0) {
                             console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
                             messagesSuccess++;
