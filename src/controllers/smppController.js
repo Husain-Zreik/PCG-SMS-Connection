@@ -141,7 +141,7 @@ export async function sendSMS(req, res) {
             session.on('deliver_sm', function (deliverPdu) {
                 console.log('deliver_sm', deliverPdu);
                 session.send(deliverPdu.response());
-                console.log(`Received SMS from ${deliverPdu.destination_addr}: ${deliverPdu.short_message.message}`);
+                console.log(`Received SMS from ${deliverPdu.source_addr}: ${deliverPdu.short_message.message}`);
             });
 
             session.on('error', function (err) {
