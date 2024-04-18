@@ -36,9 +36,9 @@ export default function startSMPPServer() {
 				session.deliver_sm({
 					source_addr: destinationAddr,
 					short_message: messageContent,
-					receipted_message_id: messageID,
+					// receipted_message_id: messageID,
 					esm_class: 4,
-					message_state: 2,
+					// message_state: 2,
 				}, function (deliverPdu) {
 					if (deliverPdu.command_status != 255) {
 						console.log(`Successful Message ID for ${destinationAddr}:`, deliverPdu.message_id);
