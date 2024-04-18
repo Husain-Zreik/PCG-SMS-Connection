@@ -84,6 +84,18 @@ import connection from '../../config/dbConnection.js';
 // }
 
 export async function sendSMS(req, res) {
+
+    function updateSentRecord(sentToId, status, serverMessageId) {
+        const updateQuery = `UPDATE sent_to SET status = ?, server_message_id = ? WHERE id = ?`;
+        connection.query(updateQuery, [status, serverMessageId, sentToId], (error, results) => {
+            if (error) {
+                console.error(`Error updating SentTo record with ID ${sentToId}:`, error);
+            } else {
+                console.log(`SentTo record with ID ${sentToId} updated successfully.`);
+            }
+        });
+    }
+
     try {
         const session = smpp.connect({
             url: `smpp://${req.body.vendor.ip}:${req.body.vendor.port}`,
@@ -104,6 +116,34 @@ export async function sendSMS(req, res) {
 
                         const messages = req.body.sent_To;
                         messagesNumber = messages.length;
+
+                        const processMessage = async (message) => {
+                            return new Promise((resolve, reject) => {
+                                setTimeout(() => {
+                                    session.submit_sm({
+                                        destination_addr: message.number,
+                                        short_message: message.content,
+                                        sm_default_msg_id: 1,
+                                    }, function (submitPdu) {
+                                        if (submitPdu.command_status !== 255) {
+                                            console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
+                                            updateSentRecord(message.id, 'sent', submitPdu.message_id);
+                                            resolve(submitPdu.message_id);
+                                        } else {
+                                            console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
+                                            updateSentRecord(message.id, 'failed', submitPdu.message_id);
+                                            reject(new Error(`Error sending SMS to ${message.number}`));
+                                        }
+                                    });
+                                }, req.body.delay * 1000);
+                            });
+                        };
+
+                        const processMessagesSequentially = async () => {
+                            for (let i = 0; i < messages.length; i++) {
+                                await processMessage(messages[i], i);
+                            }
+                        };
 
                         processMessagesSequentially()
                             .then(() => {
@@ -157,45 +197,6 @@ export async function sendSMS(req, res) {
     } catch (error) {
         console.error("An error occurred:", error);
         res.status(500).json({ error: 'An error occurred' });
-    }
-
-    const processMessagesSequentially = async () => {
-        for (let i = 0; i < messages.length; i++) {
-            await processMessage(messages[i], i);
-        }
-    };
-
-    const processMessage = async (message) => {
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                session.submit_sm({
-                    destination_addr: message.number,
-                    short_message: message.content,
-                    sm_default_msg_id: 1,
-                }, function (submitPdu) {
-                    if (submitPdu.command_status !== 255) {
-                        console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
-                        updateSentRecord(message.id, 'sent', submitPdu.message_id);
-                        resolve(submitPdu.message_id);
-                    } else {
-                        console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
-                        updateSentRecord(message.id, 'failed', submitPdu.message_id);
-                        reject(new Error(`Error sending SMS to ${message.number}`));
-                    }
-                });
-            }, req.body.delay * 1000);
-        });
-    };
-
-    function updateSentRecord(sentToId, status, serverMessageId) {
-        const updateQuery = `UPDATE sent_to SET status = ?, server_message_id = ? WHERE id = ?`;
-        connection.query(updateQuery, [status, serverMessageId, sentToId], (error, results) => {
-            if (error) {
-                console.error(`Error updating SentTo record with ID ${sentToId}:`, error);
-            } else {
-                console.log(`SentTo record with ID ${sentToId} updated successfully.`);
-            }
-        });
     }
 }
 
