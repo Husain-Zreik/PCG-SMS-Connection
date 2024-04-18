@@ -136,7 +136,8 @@ export async function sendSMS(req, res) {
                                     const sourceAddr = deliverPdu.destination_addr;
                                     const messageContent = deliverPdu.short_message.message;
                                     console.log('deliver_sm', deliverPdu);
-                                    session.send(deliverPdu.response({ message_id: messageId })); // Use messageId here
+                                    //session.send(deliverPdu.response({ message_id: messageId })); // Use messageId here
+                                    session.send(deliverPdu.response()); // Use messageId here
                                     console.log(`Received SMS from ${sourceAddr}: ${messageContent}`);
                                 });
                             }
