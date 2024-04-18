@@ -82,6 +82,11 @@ function generateMessageID() {
 
 
 function updateDeliveredRecord(messageId) {
+	if (!connection || connection.state === 'disconnected') {
+		console.error('Database connection is not available.');
+		return;
+	}
+
 	const updateQuery = `UPDATE sent_to SET is_delivered = 1 WHERE id = ?`;
 
 	connection.query(updateQuery, [messageId], (error, results) => {
@@ -92,5 +97,6 @@ function updateDeliveredRecord(messageId) {
 		}
 	});
 }
+
 
 startSMPPServer();
