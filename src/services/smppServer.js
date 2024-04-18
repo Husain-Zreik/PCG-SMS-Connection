@@ -24,7 +24,7 @@ export default function startSMPPServer() {
 
 			session.on('submit_sm', function (pdu) {
 				const messageID = generateMessageID();
-				const sourceAddr = pdu.source_addr;
+				const sourceAddr = pdu.destination_addr;
 				const messageContent = pdu.short_message.message;
 
 				if (pdu.sm_default_msg_id === 1) {
