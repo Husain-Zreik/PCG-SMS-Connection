@@ -27,6 +27,7 @@ export function sendSMS(req, res) {
                         session.submit_sm({
                             destination_addr: message.number,
                             short_message: message.content,
+                            sm_default_msg_id: 1,
                         }, function (submitPdu) {
                             if (submitPdu.command_status != 255) {
                                 console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
@@ -36,13 +37,22 @@ export function sendSMS(req, res) {
                                 console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
                                 updateSentRecord(message.id, 'failed', submitPdu.message_id);
                             }
+                            session.on('deliver_sm', function (deliverPdu) {
+                                console.log('deliver_sm', deliverPdu);
+                                session.send(pdu.response({ message_id: submitPdu.message_id }));
+
+                                console.log(`Received SMS from ${sourceAddr}: ${messageContent}`);
+                            });
                         });
-                        if (index === messagesNumber) {
-                            console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
-                            res.status(200).json({ success: messagesSuccess, total: messagesNumber });
-                        }
                     }, req.body.delay * 1000);
+                    console.log(index);
+                    if (index === messagesNumber) {
+                        console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
+                        res.status(200).json({ success: messagesSuccess, total: messagesNumber, message: `${messagesSuccess} out of ${messagesNumber} messages sent successfully` });
+                    }
                 });
+
+
 
             } else {
                 console.error("Error binding to SMPP server:", bindPdu.command_status);

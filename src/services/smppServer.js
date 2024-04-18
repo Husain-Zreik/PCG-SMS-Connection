@@ -24,24 +24,41 @@ export default function startSMPPServer() {
 
 			session.on('submit_sm', function (pdu) {
 				const messageID = generateMessageID();
-				session.send(pdu.response({ message_id: messageID }));
-			});
-
-			session.on('deliver_sm', function (deliverPdu) {
-				console.log('deliver_sm', deliverPdu);
 				const sourceAddr = deliverPdu.source_addr;
 				const messageContent = deliverPdu.short_message.message;
-				const messageId = deliverPdu.message_id;
 
-				console.log(`Received SMS from ${sourceAddr}: ${messageContent}`);
+				if (sm_default_msg_id) {
+					session.send(pdu.response({ message_id: messageID }));
+				} else {
+					session.send(pdu.response());
+				}
 
-				updateDeliveredRecord(messageId);
-
-				session.deliver_sm_resp({
-					sequence_number: deliverPdu.sequence_number,
-					command_status: 0
+				session.deliver_sm({
+					destination_addr: sourceAddr,
+					short_message: messageContent,
+				}, function (deliverPdu) {
+					if (deliverPdu.command_status != 255) {
+						console.log(`Successful Message ID for ${sourceAddr}:`, deliverPdu.message_id);
+						updateDeliveredRecord(deliverPdu.message_id);
+					}
 				});
 			});
+
+			// session.on('deliver_sm', function (deliverPdu) {
+			// 	console.log('deliver_sm', deliverPdu);
+			// 	const sourceAddr = deliverPdu.source_addr;
+			// 	const messageContent = deliverPdu.short_message.message;
+			// 	const messageId = deliverPdu.message_id;
+
+			// 	console.log(`Received SMS from ${sourceAddr}: ${messageContent}`);
+
+			// 	updateDeliveredRecord(messageId);
+
+			// 	session.deliver_sm_resp({
+			// 		sequence_number: deliverPdu.sequence_number,
+			// 		command_status: 0
+			// 	});
+			// });
 
 			session.on('enquire_link', function (pdu) {
 				session.send(pdu.response());
