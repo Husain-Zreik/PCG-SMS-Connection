@@ -83,10 +83,24 @@ function generateMessageID() {
 
 function updateDeliveredRecord(messageId) {
 	if (!connection || connection.state === 'disconnected') {
-		console.error('Database connection is not available.');
-		return;
+		console.error('Database connection is not available or disconnected.');
+		// Re-establish the database connection
+		connection.connect((err) => {
+			if (err) {
+				console.error('Error reconnecting to the database:', err);
+				return;
+			}
+			console.log('Reconnected to the database.');
+			// After reconnection, execute the query
+			executeUpdateQuery(messageId);
+		});
+	} else {
+		// If the connection is available, execute the query directly
+		executeUpdateQuery(messageId);
 	}
+}
 
+function executeUpdateQuery(messageId) {
 	const updateQuery = `UPDATE sent_to SET is_delivered = 1 WHERE id = ?`;
 
 	connection.query(updateQuery, [messageId], (error, results) => {

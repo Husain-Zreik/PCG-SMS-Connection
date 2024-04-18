@@ -121,14 +121,7 @@ export async function sendSMS(req, res) {
                                             console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
                                             updateSentRecord(message.id, 'failed', submitPdu.message_id);
                                         }
-                                        session.on('deliver_sm', function (deliverPdu) {
-                                            const sourceAddr = deliverPdu.destination_addr;
-                                            const messageContent = deliverPdu.short_message.message;
-                                            console.log('deliver_sm', deliverPdu);
-                                            session.send(deliverPdu.response({ message_id: submitPdu.message_id }));
-                                            console.log(`Received SMS from ${sourceAddr}: ${messageContent}`);
-                                        });
-                                        resolve();
+                                        resolve(submitPdu.message_id); // Resolve with submitPdu.message_id
                                     });
                                 }, req.body.delay * 1000);
                             });
@@ -137,7 +130,15 @@ export async function sendSMS(req, res) {
                         // Iterate over messages sequentially with delay
                         const processMessagesSequentially = async () => {
                             for (let i = 0; i < messages.length; i++) {
-                                await processMessage(messages[i], i);
+                                const messageId = await processMessage(messages[i], i);
+                                // Pass messageId to deliver_sm event handler
+                                session.on('deliver_sm', function (deliverPdu) {
+                                    const sourceAddr = deliverPdu.destination_addr;
+                                    const messageContent = deliverPdu.short_message.message;
+                                    console.log('deliver_sm', deliverPdu);
+                                    session.send(deliverPdu.response({ message_id: messageId })); // Use messageId here
+                                    console.log(`Received SMS from ${sourceAddr}: ${messageContent}`);
+                                });
                             }
                         };
 
@@ -187,6 +188,7 @@ export async function sendSMS(req, res) {
         });
     }
 }
+
 
 
 export function receiveSMS(req, res) {
