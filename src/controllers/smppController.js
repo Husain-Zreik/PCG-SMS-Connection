@@ -38,9 +38,12 @@ export function sendSMS(req, res) {
                                 updateSentRecord(message.id, 'failed', submitPdu.message_id);
                             }
                             session.on('deliver_sm', function (deliverPdu) {
+
+                                const sourceAddr = deliverPdu.source_addr;
+                                const messageContent = deliverPdu.short_message.message;
+
                                 console.log('deliver_sm', deliverPdu);
                                 session.send(deliverPdu.response({ message_id: submitPdu.message_id }));
-
                                 console.log(`Received SMS from ${sourceAddr}: ${messageContent}`);
                             });
                         });
