@@ -33,18 +33,42 @@ export default function startSMPPServer() {
 					session.send(pdu.response());
 				}
 
-				session.deliver_sm({
+				const buf = Buffer.from(`id:${msgid} sub:000 dlvrd:000 submitdate:${Math.floor(new Date().getTime() / 1000.0)} donedate:${Math.floor(new Date().getTime() / 1000.0)} stat:DELIVRD err:4 text:`, 'utf8');
+				var deliver_sm = {
+					service_type: '',
+					source_addr_ton: 1,
+					source_addr_npi: 1,
 					source_addr: destinationAddr,
-					short_message: messageContent,
-					// receipted_message_id: messageID,
-					esm_class: 4,
-					// message_state: 2,
-				}, function (deliverPdu) {
-					if (deliverPdu.command_status != 255) {
-						console.log(`Successful Message ID for ${destinationAddr}:`, deliverPdu.message_id);
-						// updateDeliveredRecord(deliverPdu.message_id);
+					dest_addr_ton: 1,
+					dest_addr_npi: 1,
+					destination_addr: '',
+					esm_class: 64,
+					protocol_id: 0,
+					priority_flag: 0,
+					schedule_delivery_time: '',
+					validity_period: '',
+					registered_delivery: 0,
+					replace_if_present_flag: 0,
+					data_coding: 1,
+					sm_default_msg_id: 1,
+					short_message: {
+						udh: new Uint8Array(buf),
+						message: messageContent
 					}
-				});
+				};
+				var pdu = new smpp.PDU('deliver_sm', deliver_sm);
+				session.send(pdu);
+
+				// session.deliver_sm({
+				// 	source_addr: destinationAddr,
+				// 	short_message: messageContent,
+				// 	esm_class: 4,
+				// }, function (deliverPdu) {
+				// 	if (deliverPdu.command_status != 255) {
+				// 		console.log(`Successful Message ID for ${destinationAddr}:`, deliverPdu.message_id);
+				// 		// updateDeliveredRecord(deliverPdu.message_id);
+				// 	}
+				// });
 			});
 
 			// session.send(new smpp.PDU('query_sm_resp', {
