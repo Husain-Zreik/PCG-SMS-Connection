@@ -270,6 +270,17 @@ export async function sendSMS(req, res) {
                 console.log('Connection closed');
             });
 
+            session.on('pdu', function (pdu) {
+                console.log('####### PDU ########');
+                console.log(pdu)
+                if (pdu.command == 'deliver_sm') {
+
+                    session.deliver_sm_resp({
+                        sequence_number: pdu.sequence_number,
+                    });
+                }
+            });
+
             // Set up deliver_sm event handler here
             session.on('deliver_sm', function (deliverPdu) {
                 const sourceAddr = deliverPdu.destination_addr;

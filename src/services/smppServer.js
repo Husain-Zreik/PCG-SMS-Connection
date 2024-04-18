@@ -46,21 +46,14 @@ export default function startSMPPServer() {
 				});
 			});
 
-			// session.on('deliver_sm', function (deliverPdu) {
-			// 	console.log('deliver_sm', deliverPdu);
-			// 	const sourceAddr = deliverPdu.source_addr;
-			// 	const messageContent = deliverPdu.short_message.message;
-			// 	const messageId = deliverPdu.message_id;
-
-			// 	console.log(`Received SMS from ${sourceAddr}: ${messageContent}`);
-
-			// 	updateDeliveredRecord(messageId);
-
-			// 	session.deliver_sm_resp({
-			// 		sequence_number: deliverPdu.sequence_number,
-			// 		command_status: 0
-			// 	});
-			// });
+			queue.on('message', function (message) {
+				session.send(new smpp.PDU('deliver_sm', {
+					esm_class: 4,
+					short_message: message.text,
+					source_addr: message.destination,
+					destination_addr: message.source
+				}));
+			});
 
 			session.on('enquire_link', function (pdu) {
 				session.send(pdu.response());
