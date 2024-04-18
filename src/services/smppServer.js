@@ -24,7 +24,7 @@ export default function startSMPPServer() {
 
 			session.on('submit_sm', function (pdu) {
 				const messageID = generateMessageID();
-				const sourceAddr = pdu.destination_addr;
+				const destinationAddr = pdu.destination_addr;
 				const messageContent = pdu.short_message.message;
 
 				if (pdu.sm_default_msg_id === 1) {
@@ -34,25 +34,33 @@ export default function startSMPPServer() {
 				}
 
 				session.deliver_sm({
-					destination_addr: sourceAddr,
+					source_addr: destinationAddr,
 					short_message: messageContent,
-					message_id: messageID,
+					receipted_message_id: messageID,
 					esm_class: 4,
+					message_state: 2,
 				}, function (deliverPdu) {
 					if (deliverPdu.command_status != 255) {
-						console.log(`Successful Message ID for ${sourceAddr}:`, deliverPdu.message_id);
+						console.log(`Successful Message ID for ${destinationAddr}:`, deliverPdu.message_id);
 						// updateDeliveredRecord(deliverPdu.message_id);
 					}
 				});
 			});
 
-			queue.on('message', function (message) {
-				session.send(new smpp.PDU('deliver_sm', {
-					esm_class: 4,
-					short_message: message.text,
-					source_addr: message.destination,
-					destination_addr: message.source
-				}));
+			// session.send(new smpp.PDU('query_sm_resp', {
+			// 	message_id: messageID,
+			// 	final_date: '20240418',
+			// 	message_state: 2,
+			// 	error_code: 0,
+			// }));
+
+			session.on('deliver_sm', function (deliverPdu) {
+				if (deliverPdu.esm_class === 4) {
+					console.log("in esm_class");
+
+				} else {
+					console.log("not in esm_class");
+				}
 			});
 
 			session.on('enquire_link', function (pdu) {
