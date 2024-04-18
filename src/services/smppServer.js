@@ -35,7 +35,7 @@ export default function startSMPPServer() {
 				} else {
 					session.send(pdu.response());
 				}
-				const buf = Buffer.from(`id:${messageID} sub:000 dlvrd:000 submit date:${format(new Date(), 'YYMMDDHHmm')} done date:${format(new Date(), 'YYMMDDHHmm')} stat:DELIVRD err:4 `);
+				const buf = Buffer.from(`id:${messageID} sub:000 dlvrd:000 submit date:${format(new Date(), 'YYMMDDHHmm')} done date:${format(new Date(), 'YYMMDDHHmm')} stat:DELIVRD err:4 Text:DELIVERED `);
 
 				var deliver_sm = {
 					service_type: '',
@@ -45,7 +45,7 @@ export default function startSMPPServer() {
 					dest_addr_ton: 1,
 					dest_addr_npi: 1,
 					destination_addr: destinationAddr,
-					esm_class: 0x40, // Set UDHI flag
+					esm_class: 0x40,
 					protocol_id: 0,
 					priority_flag: 0,
 					schedule_delivery_time: '',
@@ -56,6 +56,7 @@ export default function startSMPPServer() {
 					sm_default_msg_id: 1,
 					short_message: {
 						udh: new Uint8Array(buf),
+						message_id: messageID,
 						message: messageContent
 					}
 				};
