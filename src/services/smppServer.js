@@ -1,6 +1,8 @@
-import smpp from 'smpp';
-const { createServer } = smpp;
 import connection from '../../config/dbConnection.js';
+import smpp from 'smpp';
+import fecha from 'fecha';
+const { format } = fecha;
+const { createServer } = smpp;
 
 export default function startSMPPServer() {
 	var server = createServer({
@@ -34,7 +36,8 @@ export default function startSMPPServer() {
 					session.send(pdu.response());
 				}
 
-				const buf = Buffer.from(`id:${messageID} sub:000 dlvrd:000 submitdate:${Math.floor(new Date().getTime() / 1000.0)} donedate:${Math.floor(new Date().getTime() / 1000.0)} stat:DELIVRD err:4 text:`, 'utf8');
+				const buf = Buffer.from(`id:${msgid} sub:000 dlvrd:000 submit date:${format(new Date(), 'YYMMDDHHmm')} done date:${format(new Date(), 'YYMMDDHHmm')} stat:DELIVRD err:4`);
+
 				var deliver_sm = {
 					service_type: '',
 					source_addr_ton: 1,

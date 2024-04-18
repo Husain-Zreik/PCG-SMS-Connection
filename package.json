@@ -29,6 +29,7 @@
     "escape-html": "^1.0.3",
     "etag": "^1.8.1",
     "express": "^4.19.2",
+    "fecha": "^4.2.3",
     "finalhandler": "^1.2.0",
     "findhit-proxywrap": "^0.3.13",
     "forwarded": "^0.2.0",
