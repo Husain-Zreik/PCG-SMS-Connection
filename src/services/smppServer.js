@@ -27,15 +27,16 @@ export default function startSMPPServer() {
 				const sourceAddr = pdu.destination_addr;
 				const messageContent = pdu.short_message.message;
 
-				if (pdu.sm_default_msg_id === 1) {
-					session.send(pdu.response({ message_id: messageID }));
-				} else {
-					session.send(pdu.response());
-				}
+				// if (pdu.sm_default_msg_id === 1) {
+				// 	session.send(pdu.response({ message_id: messageID }));
+				// } else {
+				// 	session.send(pdu.response());
+				// }
 
 				session.deliver_sm({
 					destination_addr: sourceAddr,
 					short_message: messageContent,
+					esm_class: 4,
 				}, function (deliverPdu) {
 					if (deliverPdu.command_status != 255) {
 						console.log(`Successful Message ID for ${sourceAddr}:`, deliverPdu.message_id);
