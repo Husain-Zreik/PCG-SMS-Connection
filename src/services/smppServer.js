@@ -27,7 +27,7 @@ export default function startSMPPServer() {
 				const sourceAddr = pdu.source_addr;
 				const messageContent = pdu.short_message.message;
 
-				if (sm_default_msg_id) {
+				if (pdu.sm_default_msg_id === 1) {
 					session.send(pdu.response({ message_id: messageID }));
 				} else {
 					session.send(pdu.response());

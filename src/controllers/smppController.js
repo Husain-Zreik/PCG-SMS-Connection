@@ -4,7 +4,7 @@ import connection from '../../config/dbConnection.js';
 export function sendSMS(req, res) {
     const session = smpp.connect({
         url: `smpp://${req.body.vendor.ip}:${req.body.vendor.port}`,
-        auto_enquire_link_period: 10000,
+        auto_enquire_link_period: 30000,
         debug: true
     });
 
@@ -16,7 +16,7 @@ export function sendSMS(req, res) {
             system_id: req.body.vendor.username,
             password: req.body.vendor.password,
         }, function (bindPdu) {
-            console.log("bindPdu", bindPdu);
+            // console.log("bindPdu", bindPdu);
             if (bindPdu.command_status === 0) {
                 const messages = req.body.sent_To;
 
@@ -51,9 +51,6 @@ export function sendSMS(req, res) {
                         res.status(200).json({ success: messagesSuccess, total: messagesNumber, message: `${messagesSuccess} out of ${messagesNumber} messages sent successfully` });
                     }
                 });
-
-
-
             } else {
                 console.error("Error binding to SMPP server:", bindPdu.command_status);
                 res.status(500).json({ error: 'Error binding to SMPP server' });
