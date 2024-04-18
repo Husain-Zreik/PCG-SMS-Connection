@@ -35,7 +35,7 @@ export default function startSMPPServer() {
 				} else {
 					session.send(pdu.response());
 				}
-				const buf = Buffer.from(`id:${msgid} sub:000 dlvrd:000 submit date:${format(new Date(), 'YYMMDDHHmm')} done date:${format(new Date(), 'YYMMDDHHmm')} stat:DELIVRD err:4 `);
+				const buf = Buffer.from(`id:${messageID} sub:000 dlvrd:000 submit date:${format(new Date(), 'YYMMDDHHmm')} done date:${format(new Date(), 'YYMMDDHHmm')} stat:DELIVRD err:4 `);
 
 				var deliver_sm = {
 					service_type: '',
