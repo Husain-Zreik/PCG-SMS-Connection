@@ -40,7 +40,7 @@ export default function startSMPPServer() {
 				}, function (deliverPdu) {
 					if (deliverPdu.command_status != 255) {
 						console.log(`Successful Message ID for ${sourceAddr}:`, deliverPdu.message_id);
-						updateDeliveredRecord(deliverPdu.message_id);
+						// updateDeliveredRecord(deliverPdu.message_id);
 					}
 				});
 			});
