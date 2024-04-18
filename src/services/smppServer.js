@@ -1,4 +1,4 @@
-import { createServer } from 'smpp';
+import { createServer, smpp } from 'smpp';
 import connection from '../../config/dbConnection.js';
 
 export default function startSMPPServer() {
