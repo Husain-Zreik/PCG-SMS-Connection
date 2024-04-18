@@ -36,6 +36,7 @@ export default function startSMPPServer() {
 				session.deliver_sm({
 					destination_addr: sourceAddr,
 					short_message: messageContent,
+					message_id: messageID,
 					esm_class: 4,
 				}, function (deliverPdu) {
 					if (deliverPdu.command_status != 255) {
