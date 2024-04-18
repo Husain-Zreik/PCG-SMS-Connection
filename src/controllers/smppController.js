@@ -39,7 +39,7 @@ export function sendSMS(req, res) {
                             }
                             session.on('deliver_sm', function (deliverPdu) {
                                 console.log('deliver_sm', deliverPdu);
-                                session.send(pdu.response({ message_id: submitPdu.message_id }));
+                                session.send(deliverPdu.response({ message_id: submitPdu.message_id }));
 
                                 console.log(`Received SMS from ${sourceAddr}: ${messageContent}`);
                             });
