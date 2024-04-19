@@ -35,7 +35,7 @@ export default function startSMPPServer() {
 				} else {
 					session.send(pdu.response());
 				}
-				const buf = Buffer.from(`id:${messageID} sub:001 dlvrd:001 submit date:${format(new Date(), 'YYMMDDHHmm')} done date:${format(new Date(), 'YYMMDDHHmm')} stat:DELIVRD err:000 `);
+				//const buf = Buffer.from(`id:${messageID} sub:001 dlvrd:001 submit date:${format(new Date(), 'YYMMDDHHmm')} done date:${format(new Date(), 'YYMMDDHHmm')} stat:DELIVRD err:000 `);
 
 				var deliver_sm = {
 					service_type: '',
@@ -55,8 +55,8 @@ export default function startSMPPServer() {
 					data_coding: 0,
 					sm_default_msg_id: 0x40,
 					short_message: {
-						udh: new Uint8Array(buf),
-						message: messageContent,
+						// udh: new Uint8Array(buf),
+						message: `id:${messageID} sub:001 dlvrd:001 submit date:${format(new Date(), 'YYMMDDHHmm')} done date:${format(new Date(), 'YYMMDDHHmm')} stat:DELIVRD err:000 text: ${messageContent}`,
 					},
 					message_state: 2,
 					receipted_message_id: messageID,
