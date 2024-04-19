@@ -88,9 +88,9 @@ export default function startSMPPServer() {
 					},
 				}, function (deliverPdu) {
 					if (deliverPdu.command_status !== 255) {
-						console.log(`Successful Message ID for ${message.number}:`, deliverPdu.message_id);
+						console.log(`Successful Message ID ${messageID}:`);
 					} else {
-						console.error(`Error sending SMS to ${message.number}:`, deliverPdu.command_status);
+						console.error(`Error sending SMS to ${messageID}:`);
 					}
 				});
 
