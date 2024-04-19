@@ -123,8 +123,6 @@ export async function sendSMS(req, res) {
                                     session.submit_sm({
                                         destination_addr: message.number,
                                         short_message: message.content,
-                                        // sm_default_msg_id: 0x40,
-                                        // esm_class: 4,
                                         registered_delivery: 1,
                                     }, function (submitPdu) {
                                         if (submitPdu.command_status !== 255) {
@@ -164,26 +162,6 @@ export async function sendSMS(req, res) {
                         reject(new Error('Error binding to SMPP server'));
                     }
                 });
-            });
-
-            session.on('pdu', function (pdu) {
-                console.log('####### PDU ########');
-                console.log(pdu)
-            });
-
-            // session.query_sm({
-            //     message_id: 'your_message_id_here',
-            //     source_addr: 'source_address_here',
-            //     source_addr_ton: 1,
-            //     source_addr_npi: 1,
-            // }, function (responsePdu) {
-            //     console.log('Response to query_sm request:', responsePdu);
-            // });
-
-            session.on('deliver_sm', function (deliverPdu) {
-                console.log('deliver_sm', deliverPdu);
-                session.send(deliverPdu.response());
-                // console.log(`Received SMS from ${deliverPdu.source_addr}: ${deliverPdu.short_message.message}`);
             });
 
             session.on('error', function (err) {
