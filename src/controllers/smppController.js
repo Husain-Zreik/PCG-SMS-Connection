@@ -51,6 +51,23 @@ export async function sendSMS(req, res) {
                     let messagesSuccess = 0;
                     let deliveredMessages = 0;
 
+                    const timeout = setTimeout(() => {
+                        timeoutReached = true;
+                        console.log('Timeout reached, closing connection...');
+                        session.unbind(() => {
+                            session.close();
+                            console.log('Connection closed');
+                            res.status(500).json({
+                                error: 'Request time out and not all messages has been delivered',
+                                total: messagesNumber,
+                                sent: messagesSuccess,
+                                delivered: deliveredMessages,
+                                message: `${messagesSuccess} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
+                            });
+                            resolve();
+                        });
+                    }, timeoutDuration);
+
                     for (let i = 0; i < messagesNumber; i++) {
                         const message = messages[i];
                         await new Promise((innerResolve) => {
@@ -103,25 +120,7 @@ export async function sendSMS(req, res) {
                         });
                     }
 
-                    console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
-
-                    const timeout = setTimeout(() => {
-                        timeoutReached = true;
-                        console.log('Timeout reached, closing connection...');
-                        session.unbind(() => {
-                            session.close();
-                            console.log('Connection closed');
-                            res.status(500).json({
-                                error: 'Request time out and not all messages has been delivered',
-                                total: messagesNumber,
-                                sent: messagesSuccess,
-                                delivered: deliveredMessages,
-                                message: `${messagesSuccess} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
-                            });
-                            resolve();
-                        });
-                    }, timeoutDuration);
-
+                    console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`);
 
                     session.on('error', (err) => {
                         console.error("An error occurred:", err);
