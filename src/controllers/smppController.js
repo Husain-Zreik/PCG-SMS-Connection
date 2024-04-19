@@ -164,6 +164,11 @@ export async function sendSMS(req, res) {
                 });
             });
 
+            session.on('deliver_sm', function (deliverPdu) {
+                console.log('deliver_sm', deliverPdu);
+                session.send(deliverPdu.response());
+            });
+
             session.on('error', function (err) {
                 console.error("An error occurred:", err);
                 res.status(500).json({ error: 'An error occurred' });
