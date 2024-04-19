@@ -68,20 +68,20 @@ export async function sendSMS(req, res) {
                         });
                     }, timeoutDuration);
 
-                    session.on('deliver_sm', async (deliverPdu) => {
-                        for (let i = 0; i < messagesNumber; i++) {
-                            const message = messages[i];
-                            await new Promise((innerResolve) => {
-                                setTimeout(() => {
-                                    session.submit_sm({
-                                        destination_addr: message.number,
-                                        short_message: message.content,
-                                        registered_delivery: 1,
-                                    }, (submitPdu) => {
-                                        if (submitPdu.command_status === 0) {
-                                            console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
-                                            updateStatus(message.id, 'sent', submitPdu.message_id);
-                                            messagesSuccess++;
+                    for (let i = 0; i < messagesNumber; i++) {
+                        const message = messages[i];
+                        await new Promise((innerResolve) => {
+                            setTimeout(() => {
+                                session.submit_sm({
+                                    destination_addr: message.number,
+                                    short_message: message.content,
+                                    registered_delivery: 1,
+                                }, (submitPdu) => {
+                                    if (submitPdu.command_status === 0) {
+                                        console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
+                                        updateStatus(message.id, 'sent', submitPdu.message_id);
+                                        messagesSuccess++;
+                                        session.on('deliver_sm', async (deliverPdu) => {
                                             console.log('deliver_sm', deliverPdu);
                                             session.send(pdu.response());
 
@@ -89,20 +89,20 @@ export async function sendSMS(req, res) {
                                                 updateIsDelivered(deliverPdu.receipted_message_id);
                                                 deliveredMessages++;
                                             }
-                                        } else {
-                                            console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
-                                            updateStatus(message.id, 'failed', submitPdu.message_id);
-                                        }
-                                        innerResolve();
-                                    });
-                                }, req.body.delay * 1000);
-                            }).catch(error => {
-                                console.error('Error sending SMS:', error);
-                                res.status(500).json({ error: 'Error sending SMS' });
-                                reject(error);
-                            });
-                        }
-                    });
+                                        });
+                                    } else {
+                                        console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
+                                        updateStatus(message.id, 'failed', submitPdu.message_id);
+                                    }
+                                    innerResolve();
+                                });
+                            }, req.body.delay * 1000);
+                        }).catch(error => {
+                            console.error('Error sending SMS:', error);
+                            res.status(500).json({ error: 'Error sending SMS' });
+                            reject(error);
+                        });
+                    }
 
                     console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
 
