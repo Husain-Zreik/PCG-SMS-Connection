@@ -35,7 +35,7 @@ export default function startSMPPServer() {
 				} else {
 					session.send(pdu.response());
 				}
-				const buf = Buffer.from(`id:${messageID} sub:001 dlvrd:001 submit date:${format(new Date(), 'YYMMDDHHmm')} done date:${format(new Date(), 'YYMMDDHHmm')} stat:UNDELIV err:4 `);
+				const buf = Buffer.from(`id:${messageID} sub:001 dlvrd:001 submit date:${format(new Date(), 'YYMMDDHHmm')} done date:${format(new Date(), 'YYMMDDHHmm')} stat:DELIVRD err:4 `);
 
 				var deliver_sm = {
 					service_type: '',
@@ -53,10 +53,35 @@ export default function startSMPPServer() {
 					registered_delivery: 1,
 					replace_if_present_flag: 0,
 					data_coding: 1,
-					sm_default_msg_id: 0x80,
+					sm_default_msg_id: 1,
 					short_message: {
 						udh: new Uint8Array(buf),
 						message_id: messageID,
+						message: messageContent
+					}
+				};
+				var pdu = new smpp.PDU('deliver_sm', deliver_sm);
+				session.send(pdu);
+
+				var deliver_sm = {
+					service_type: '',
+					source_addr_ton: 1,
+					source_addr_npi: 1,
+					source_addr: destinationAddr,
+					dest_addr_ton: 1,
+					dest_addr_npi: 1,
+					destination_addr: destinationAddr,
+					esm_class: 4,
+					protocol_id: 0,
+					priority_flag: 0,
+					schedule_delivery_time: '',
+					validity_period: '',
+					registered_delivery: 1,
+					replace_if_present_flag: 0,
+					data_coding: 1,
+					sm_default_msg_id: 0x80,
+					short_message: {
+						message_id: messageID + "second delivery",
 						message: messageContent
 					}
 				};

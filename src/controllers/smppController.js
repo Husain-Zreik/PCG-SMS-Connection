@@ -124,6 +124,7 @@ export async function sendSMS(req, res) {
                                         destination_addr: message.number,
                                         short_message: message.content,
                                         sm_default_msg_id: 0x40,
+                                        esm_class: 4,
                                         registered_delivery: 1,
                                     }, function (submitPdu) {
                                         if (submitPdu.command_status !== 255) {
