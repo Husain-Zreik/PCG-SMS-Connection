@@ -53,7 +53,7 @@ export default function startSMPPServer() {
 					registered_delivery: 1,
 					replace_if_present_flag: 0,
 					data_coding: 1,
-					sm_default_msg_id: 1,
+					sm_default_msg_id: null,
 					short_message: {
 						udh: new Uint8Array(buf),
 						message_id: messageID,
@@ -79,7 +79,7 @@ export default function startSMPPServer() {
 					registered_delivery: 1,
 					replace_if_present_flag: 0,
 					data_coding: 1,
-					sm_default_msg_id: 0x80,
+					sm_default_msg_id: null,
 					short_message: {
 						message_id: messageID + "second delivery",
 						message: messageContent
