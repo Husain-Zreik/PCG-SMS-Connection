@@ -77,29 +77,36 @@ export async function sendSMS(req, res) {
                                     short_message: message.content,
                                     registered_delivery: 1,
                                 }, (submitPdu) => {
+                                    console.log("submit pdu", submitPdu);
                                     if (submitPdu.command_status === 0) {
                                         console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
                                         updateStatus(message.id, 'sent', submitPdu.message_id);
                                         messagesSuccess++;
-                                        if (i === messagesNumber - 1) {
-                                            session.on('deliver_sm', async (deliverPdu) => {
-                                                console.log('deliver_sm', deliverPdu);
-                                                session.send(deliverPdu.response());
-
-                                                if (deliverPdu.command_status === 0) {
-                                                    updateIsDelivered(deliverPdu.receipted_message_id);
-                                                    deliveredMessages++;
-                                                }
-                                            });
-
-                                        }
                                     } else {
                                         console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
                                         updateStatus(message.id, 'failed', submitPdu.message_id);
                                     }
                                     innerResolve();
                                 });
+                                session.on('deliver_sm', async (deliverPdu) => {
+                                    console.log('deliver_sm-1', deliverPdu);
+                                    session.send(deliverPdu.response());
+
+                                    if (deliverPdu.command_status === 0) {
+                                        updateIsDelivered(deliverPdu.receipted_message_id);
+                                        deliveredMessages++;
+                                    }
+                                });
                             }, req.body.delay * 1000);
+                            session.on('deliver_sm', async (deliverPdu) => {
+                                console.log('deliver_sm-2', deliverPdu);
+                                session.send(deliverPdu.response());
+
+                                if (deliverPdu.command_status === 0) {
+                                    updateIsDelivered(deliverPdu.receipted_message_id);
+                                    deliveredMessages++;
+                                }
+                            });
                         }).catch(error => {
                             console.error('Error sending SMS:', error);
                             res.status(500).json({ error: 'Error sending SMS' });
