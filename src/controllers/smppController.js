@@ -81,14 +81,6 @@ export async function sendSMS(req, res) {
                                         console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
                                         updateStatus(message.id, 'sent', submitPdu.message_id);
                                         messagesSuccess++;
-                                        session.on('deliver_sm', (deliverPdu) => {
-                                            console.log('deliver_sm', deliverPdu);
-
-                                            if (deliverPdu.command_status === 0) {
-                                                updateIsDelivered(deliverPdu.receipted_message_id);
-                                                deliveredMessages++;
-                                            }
-                                        });
                                     } else {
                                         console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
                                         updateStatus(message.id, 'failed', submitPdu.message_id);
@@ -100,6 +92,14 @@ export async function sendSMS(req, res) {
                             console.error('Error sending SMS:', error);
                             res.status(500).json({ error: 'Error sending SMS' });
                             reject(error);
+                        });
+                        session.on('deliver_sm', (deliverPdu) => {
+                            console.log('deliver_sm', deliverPdu);
+
+                            if (deliverPdu.command_status === 0) {
+                                updateIsDelivered(deliverPdu.receipted_message_id);
+                                deliveredMessages++;
+                            }
                         });
                     }
 
