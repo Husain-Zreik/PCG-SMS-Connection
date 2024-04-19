@@ -35,9 +35,44 @@ export default function startSMPPServer() {
 				} else {
 					session.send(pdu.response());
 				}
-				const buf = Buffer.from(`id:${messageID} sub:001 dlvrd:001 submit date:${format(new Date(), 'YYMMDDHHmm')} done date:${format(new Date(), 'YYMMDDHHmm')} stat:DELIVRD err:000 text:`);
+				// const buf = Buffer.from(`id:${messageID} sub:001 dlvrd:001 submit date:${format(new Date(), 'YYMMDDHHmm')} done date:${format(new Date(), 'YYMMDDHHmm')} stat:DELIVRD err:000 text:`);
 
-				var deliver_sm = {
+				// var deliver_sm = {
+				// 	service_type: '',
+				// 	source_addr_ton: 0,
+				// 	source_addr_npi: 0,
+				// 	source_addr: destinationAddr,
+				// 	dest_addr_ton: 0,
+				// 	dest_addr_npi: 0,
+				// 	destination_addr: '',
+				// 	esm_class: 4,
+				// 	protocol_id: 0,
+				// 	priority_flag: 0,
+				// 	schedule_delivery_time: '',
+				// 	validity_period: '',
+				// 	registered_delivery: 0,
+				// 	replace_if_present_flag: 0,
+				// 	data_coding: 0,
+				// 	sm_default_msg_id: 0,
+				// 	short_message: {
+				// 		// udh: new Uint8Array(buf),
+				// 		// message: new Uint8Array(buf),
+				// 		message: `id:${messageID} sub:001 dlvrd:001 submit date:${format(new Date(), 'YYMMDDHHmm')} done date:${format(new Date(), 'YYMMDDHHmm')} stat:DELIVRD err:000 text:`,
+				// 	},
+				// 	message_state: 2,
+				// 	receipted_message_id: messageID,
+				// };
+				// var pdu = new smpp.PDU('deliver_sm', deliver_sm);
+				// session.send(pdu);
+				// console.log(pdu);
+
+				const currentTime = format(new Date(), 'YYMMDDHHmm');
+
+				// Construct the delivery receipt message string
+				const deliveryReceiptMessage = `id:${messageID} sub:001 dlvrd:001 submit date:${currentTime} done date:${currentTime} stat:DELIVRD err:000 text:`;
+
+				// Create the deliver_sm object with the formatted short_message
+				const deliver_sm = {
 					service_type: '',
 					source_addr_ton: 0,
 					source_addr_npi: 0,
@@ -55,16 +90,17 @@ export default function startSMPPServer() {
 					data_coding: 0,
 					sm_default_msg_id: 0,
 					short_message: {
-						// udh: new Uint8Array(buf),
-						// message: new Uint8Array(buf),
-						message: `id:${messageID} sub:001 dlvrd:001 submit date:${format(new Date(), 'YYMMDDHHmm')} done date:${format(new Date(), 'YYMMDDHHmm')} stat:DELIVRD err:000 text:`,
+						message: deliveryReceiptMessage,
 					},
 					message_state: 2,
 					receipted_message_id: messageID,
 				};
-				var pdu = new smpp.PDU('deliver_sm', deliver_sm);
+
+				// Create and send the PDU
+				const pdu = new smpp.PDU('deliver_sm', deliver_sm);
 				session.send(pdu);
 				console.log(pdu);
+
 
 
 				// var deliver_sm = {
