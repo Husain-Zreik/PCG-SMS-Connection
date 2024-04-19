@@ -25,7 +25,7 @@ export async function sendSMS(req, res) {
                 session.bind_transceiver({
                     system_id: req.body.vendor.username,
                     password: req.body.vendor.password,
-                }, (bindPdu) => {
+                }, async (bindPdu) => {
                     if (bindPdu.command_status !== 0) {
                         console.error("Error binding to SMPP server:", bindPdu.command_status);
                         res.status(500).json({ error: 'Error binding to SMPP server' });
@@ -37,34 +37,37 @@ export async function sendSMS(req, res) {
                     const messagesNumber = messages.length;
                     let messagesSuccess = 0;
 
-                    const processMessage = async (message) => {
-                        setTimeout(() => {
-                            session.submit_sm({
-                                destination_addr: message.number,
-                                short_message: message.content,
-                                registered_delivery: 1,
-                            }, (submitPdu) => {
-                                if (submitPdu.command_status !== 0) {
-                                    console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
-                                    updateSentRecord(message.id, 'failed', submitPdu.message_id);
-                                    reject(new Error(`Error sending SMS to ${message.number}`));
-                                    return;
-                                }
+                    for (let i = 0; i < messagesNumber; i++) {
+                        const message = messages[i];
+                        await new Promise((innerResolve, innerReject) => {
+                            setTimeout(() => {
+                                session.submit_sm({
+                                    destination_addr: message.number,
+                                    short_message: message.content,
+                                    registered_delivery: 1,
+                                }, (submitPdu) => {
+                                    if (submitPdu.command_status !== 0) {
+                                        console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
+                                        updateSentRecord(message.id, 'failed', submitPdu.message_id);
+                                        innerReject(new Error(`Error sending SMS to ${message.number}`));
+                                        return;
+                                    }
 
-                                console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
-                                updateSentRecord(message.id, 'sent', submitPdu.message_id);
-                                messagesSuccess++;
+                                    console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
+                                    updateSentRecord(message.id, 'sent', submitPdu.message_id);
+                                    messagesSuccess++;
 
-                                if (messagesSuccess === messagesNumber) {
-                                    console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
-                                    res.status(200).json({ success: messagesSuccess, total: messagesNumber, message: `${messagesSuccess} out of ${messagesNumber} messages sent successfully` });
-                                    resolve();
-                                }
-                            });
-                        }, req.body.delay * 1000);
-                    };
+                                    if (messagesSuccess === messagesNumber) {
+                                        console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
+                                        res.status(200).json({ success: messagesSuccess, total: messagesNumber, message: `${messagesSuccess} out of ${messagesNumber} messages sent successfully` });
+                                        resolve();
+                                    }
 
-                    messages.forEach(processMessage);
+                                    innerResolve();
+                                });
+                            }, req.body.delay * 1000);
+                        });
+                    }
 
                     session.on('deliver_sm', (deliverPdu) => {
                         console.log('deliver_sm', deliverPdu);
@@ -88,7 +91,6 @@ export async function sendSMS(req, res) {
         res.status(500).json({ error: 'An error occurred' });
     }
 }
-
 
 
 export function receiveSMS(req, res) {
