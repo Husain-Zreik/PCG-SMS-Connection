@@ -97,9 +97,9 @@ export default function startSMPPServer() {
 				};
 
 				// Create and send the PDU
-				const pdu = new smpp.PDU('deliver_sm', deliver_sm);
-				session.send(pdu);
-				console.log(pdu);
+				const hi = new smpp.PDU('deliver_sm', deliver_sm);
+				session.send(hi);
+				console.log(hi);
 
 
 
