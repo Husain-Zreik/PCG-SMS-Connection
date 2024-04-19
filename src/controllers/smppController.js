@@ -88,6 +88,10 @@ export async function sendSMS(req, res) {
                                     }
                                     innerResolve();
                                 });
+                            }, req.body.delay * 1000);
+                        })
+                            .then(() => {
+                                // Attach deliver_sm event listener after submitting each message
                                 session.on('deliver_sm', async (deliverPdu) => {
                                     console.log('deliver_sm-1', deliverPdu);
                                     session.send(deliverPdu.response());
@@ -97,22 +101,14 @@ export async function sendSMS(req, res) {
                                         deliveredMessages++;
                                     }
                                 });
-                            }, req.body.delay * 1000);
-                            session.on('deliver_sm', async (deliverPdu) => {
-                                console.log('deliver_sm-2', deliverPdu);
-                                session.send(deliverPdu.response());
-
-                                if (deliverPdu.command_status === 0) {
-                                    updateIsDelivered(deliverPdu.receipted_message_id);
-                                    deliveredMessages++;
-                                }
+                            })
+                            .catch(error => {
+                                console.error('Error sending SMS:', error);
+                                res.status(500).json({ error: 'Error sending SMS' });
+                                reject(error);
                             });
-                        }).catch(error => {
-                            console.error('Error sending SMS:', error);
-                            res.status(500).json({ error: 'Error sending SMS' });
-                            reject(error);
-                        });
                     }
+
 
                     console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
 
