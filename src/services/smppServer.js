@@ -55,7 +55,8 @@ export default function startSMPPServer() {
 					data_coding: 0,
 					sm_default_msg_id: 0,
 					short_message: {
-						message: buf,
+						udh: new Uint8Array(buf),
+						message: messageContent,
 					},
 					message_state: 2,
 					receipted_message_id: messageID,
