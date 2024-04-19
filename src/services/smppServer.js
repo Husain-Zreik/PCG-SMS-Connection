@@ -31,9 +31,9 @@ export default function startSMPPServer() {
 				const messageContent = pdu.short_message.message;
 
 				if (pdu.sm_default_msg_id === 1) {
-					session.send(pdu.response({ message_id: messageID }));
-				} else {
 					session.send(pdu.response());
+				} else {
+					session.send(pdu.response({ message_id: messageID }));
 				}
 				// const buf = Buffer.from(`id:${messageID} sub:001 dlvrd:001 submit date:${format(new Date(), 'YYMMDDHHmm')} done date:${format(new Date(), 'YYMMDDHHmm')} stat:DELIVRD err:000 text:`);
 
