@@ -81,15 +81,18 @@ export async function sendSMS(req, res) {
                                         console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
                                         updateStatus(message.id, 'sent', submitPdu.message_id);
                                         messagesSuccess++;
-                                        session.on('deliver_sm', async (deliverPdu) => {
-                                            console.log('deliver_sm', deliverPdu);
-                                            session.send(deliverPdu.response());
+                                        if (i === messagesNumber - 1) {
+                                            session.on('deliver_sm', async (deliverPdu) => {
+                                                console.log('deliver_sm', deliverPdu);
+                                                session.send(deliverPdu.response());
 
-                                            if (deliverPdu.command_status === 0) {
-                                                updateIsDelivered(deliverPdu.receipted_message_id);
-                                                deliveredMessages++;
-                                            }
-                                        });
+                                                if (deliverPdu.command_status === 0) {
+                                                    updateIsDelivered(deliverPdu.receipted_message_id);
+                                                    deliveredMessages++;
+                                                }
+                                            });
+
+                                        }
                                     } else {
                                         console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
                                         updateStatus(message.id, 'failed', submitPdu.message_id);
