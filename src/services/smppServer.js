@@ -45,7 +45,7 @@ export default function startSMPPServer() {
 					dest_addr_ton: 0,
 					dest_addr_npi: 0,
 					destination_addr: '',
-					esm_class: 4,
+					esm_class: 64,
 					protocol_id: 0,
 					priority_flag: 0,
 					schedule_delivery_time: '',
