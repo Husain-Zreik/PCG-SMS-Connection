@@ -55,13 +55,14 @@ export default function startSMPPServer() {
 					data_coding: 0,
 					sm_default_msg_id: 0,
 					short_message: {
-						message: new Uint8Array(buf),
+						message: buf,
 					},
 					message_state: 2,
 					receipted_message_id: messageID,
 				};
 				var pdu = new smpp.PDU('deliver_sm', deliver_sm);
 				session.send(pdu);
+
 
 				// var deliver_sm = {
 				// 	service_type: '',
