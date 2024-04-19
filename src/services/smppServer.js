@@ -63,6 +63,7 @@ export default function startSMPPServer() {
 				};
 				var pdu = new smpp.PDU('deliver_sm', deliver_sm);
 				session.send(pdu);
+				console.log(pdu);
 
 
 				// var deliver_sm = {
