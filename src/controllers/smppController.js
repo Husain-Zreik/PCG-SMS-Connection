@@ -83,7 +83,7 @@ export async function sendSMS(req, res) {
                                         messagesSuccess++;
                                         session.on('deliver_sm', async (deliverPdu) => {
                                             console.log('deliver_sm', deliverPdu);
-                                            session.send(pdu.response());
+                                            session.send(deliverPdu.response());
 
                                             if (deliverPdu.command_status === 0) {
                                                 updateIsDelivered(deliverPdu.receipted_message_id);
