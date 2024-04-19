@@ -35,58 +35,58 @@ export default function startSMPPServer() {
 				} else {
 					session.send(pdu.response());
 				}
-				const buf = Buffer.from(`id:${messageID} sub:001 dlvrd:001 submit date:${format(new Date(), 'YYMMDDHHmm')} done date:${format(new Date(), 'YYMMDDHHmm')} stat:DELIVRD err:4 `);
+				const buf = Buffer.from(`id:${messageID} sub:001 dlvrd:001 submit date:${format(new Date(), 'YYMMDDHHmm')} done date:${format(new Date(), 'YYMMDDHHmm')} stat:DELIVRD err:000 `);
 
 				var deliver_sm = {
 					service_type: '',
-					source_addr_ton: 1,
-					source_addr_npi: 1,
+					source_addr_ton: 0,
+					source_addr_npi: 0,
 					source_addr: destinationAddr,
-					dest_addr_ton: 1,
-					dest_addr_npi: 1,
-					destination_addr: destinationAddr,
-					esm_class: 64,
-					protocol_id: 0,
-					priority_flag: 0,
-					schedule_delivery_time: '',
-					validity_period: '',
-					registered_delivery: 1,
-					replace_if_present_flag: 0,
-					data_coding: 1,
-					sm_default_msg_id: null,
-					short_message: {
-						udh: new Uint8Array(buf),
-						message_id: messageID,
-						message: messageContent
-					}
-				};
-				var pdu = new smpp.PDU('deliver_sm', deliver_sm);
-				session.send(pdu);
-
-				var deliver_sm = {
-					service_type: '',
-					source_addr_ton: 1,
-					source_addr_npi: 1,
-					source_addr: destinationAddr,
-					dest_addr_ton: 1,
-					dest_addr_npi: 1,
-					destination_addr: destinationAddr,
+					dest_addr_ton: 0,
+					dest_addr_npi: 0,
+					destination_addr: '',
 					esm_class: 4,
 					protocol_id: 0,
 					priority_flag: 0,
 					schedule_delivery_time: '',
 					validity_period: '',
-					registered_delivery: 1,
+					registered_delivery: 0,
 					replace_if_present_flag: 0,
-					data_coding: 1,
-					sm_default_msg_id: null,
+					data_coding: 0,
+					sm_default_msg_id: 0,
 					short_message: {
-						message_id: messageID + "second delivery",
-						message: messageContent
-					}
+						message: new Uint8Array(buf),
+					},
+					message_state: 2,
+					receipted_message_id: messageID,
 				};
 				var pdu = new smpp.PDU('deliver_sm', deliver_sm);
 				session.send(pdu);
+
+				// var deliver_sm = {
+				// 	service_type: '',
+				// 	source_addr_ton: 0,
+				// 	source_addr_npi: 0,
+				// 	source_addr: destinationAddr,
+				// 	dest_addr_ton: 0,
+				// 	dest_addr_npi: 0,
+				// 	destination_addr: '',
+				// 	esm_class: 4,
+				// 	protocol_id: 0,
+				// 	priority_flag: 0,
+				// 	schedule_delivery_time: '',
+				// 	validity_period: '',
+				// 	registered_delivery: 0,
+				// 	replace_if_present_flag: 0,
+				// 	data_coding: 0,
+				// 	sm_default_msg_id: 0,
+				// 	short_message: {
+				// 		message_id: messageID + "second delivery",
+				// 		message: messageContent
+				// 	}
+				// };
+				// var pdu = new smpp.PDU('deliver_sm', deliver_sm);
+				// session.send(pdu);
 
 				// session.deliver_sm({
 				// 	source_addr: destinationAddr,
@@ -107,13 +107,9 @@ export default function startSMPPServer() {
 			// 	error_code: 0,
 			// }));
 
-			session.on('deliver_sm', function (deliverPdu) {
-				if (deliverPdu.esm_class === 4) {
-					console.log("in esm_class");
-
-				} else {
-					console.log("not in esm_class");
-				}
+			session.on('unbind', function (pdu) {
+				session.send(pdu.response());
+				session.close();
 			});
 
 			session.on('enquire_link', function (pdu) {
