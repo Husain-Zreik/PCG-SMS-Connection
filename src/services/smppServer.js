@@ -22,7 +22,7 @@ function ipv6ToIpv4(ipv6Address) {
 	}
 }
 
-export function startSMPPServer() {
+export default function startSMPPServer() {
 	console.log("credentials :", bindCredentials);
 
 	var server = createServer({
@@ -126,5 +126,3 @@ export function removeBindCredentials(key) {
 		console.log(`No credentials found for customer ${key}.`);
 	}
 }
-
-startSMPPServer();
