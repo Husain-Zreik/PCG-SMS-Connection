@@ -1,6 +1,6 @@
 import smpp from 'smpp';
 import connection from '../../config/dbConnection.js';
-import startSMPPServer, { stopSMPPServer } from '../services/smppServer.js';
+import startSMPPServer, { addBindCredentials, removeBindCredentials, stopSMPPServer } from '../services/smppServer.js';
 
 export async function sendSMS(req, res) {
 
