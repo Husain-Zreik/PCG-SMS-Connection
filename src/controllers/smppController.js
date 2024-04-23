@@ -62,7 +62,7 @@ export async function sendSMS(req, res) {
                             session.close();
                             console.log('Connection closed');
                             // stopSMPPServer();
-                            console.log('Smpp Server closed');
+                            // console.log('Smpp Server closed');
                             res.status(500).json({
                                 error: 'Request time out and not all messages has been delivered',
                                 total: messagesNumber,
@@ -73,6 +73,23 @@ export async function sendSMS(req, res) {
                             resolve();
                         });
                     }, timeoutDuration);
+
+                    session.on('deliver_sm', (deliverPdu) => {
+                        console.log('deliver_sm', deliverPdu);
+                        session.send(deliverPdu.response());
+
+                        // Update the status only if the message ID matches
+                        const messageId = deliverPdu.receipted_message_id;
+                        const matchingMessage = messages.find(message => message.id === messageId);
+                        if (matchingMessage) {
+                            if (deliverPdu.command_status === 0) {
+                                updateIsDelivered(messageId);
+                                deliveredMessages++;
+                            } else {
+                                console.error(`Error delivering message with ID ${messageId}:`, deliverPdu.command_status);
+                            }
+                        }
+                    });
 
                     for (let i = 0; i < messagesNumber; i++) {
                         const message = messages[i];
@@ -88,6 +105,7 @@ export async function sendSMS(req, res) {
                                         console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
                                         updateStatus(message.id, 'sent', submitPdu.message_id);
                                         messagesSuccess++;
+
                                     } else {
                                         console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
                                         updateStatus(message.id, 'failed', submitPdu.message_id);
@@ -103,15 +121,15 @@ export async function sendSMS(req, res) {
                             });
                     }
 
-                    session.on('deliver_sm', (deliverPdu) => {
-                        console.log('deliver_sm', deliverPdu);
-                        session.send(deliverPdu.response());
+                    // session.on('deliver_sm', (deliverPdu) => {
+                    //     console.log('deliver_sm', deliverPdu);
+                    //     session.send(deliverPdu.response());
 
-                        if (deliverPdu.command_status === 0) {
-                            updateIsDelivered(deliverPdu.receipted_message_id);
-                            deliveredMessages++;
-                        }
-                    });
+                    //     if (deliverPdu.command_status === 0) {
+                    //         updateIsDelivered(deliverPdu.receipted_message_id);
+                    //         deliveredMessages++;
+                    //     }
+                    // });
 
                     console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
 
@@ -122,7 +140,7 @@ export async function sendSMS(req, res) {
                             session.close();
                             console.log('Connection closed');
                             // stopSMPPServer();
-                            console.log('Smpp Server closed');
+                            // console.log('Smpp Server closed');
                             res.status(200).json({
                                 total: messagesNumber,
                                 sent: messagesSuccess,
