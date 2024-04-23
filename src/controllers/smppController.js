@@ -35,7 +35,7 @@ export async function sendSMS(req, res) {
 
         addBindCredentials(req.body.customer.id, req.body.customer);
 
-        await new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             session.on('connect', () => {
                 session.bind_transceiver({
                     system_id: req.body.vendor.username,
@@ -152,5 +152,6 @@ export async function sendSMS(req, res) {
     } catch (error) {
         console.error("An error occurred:", error);
         res.status(500).json({ error: 'An error occurred' });
+        return;
     }
 }
