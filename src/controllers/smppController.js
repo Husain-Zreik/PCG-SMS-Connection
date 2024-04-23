@@ -2,29 +2,29 @@ import smpp from 'smpp';
 import connection from '../../config/dbConnection.js';
 import { addBindCredentials, removeBindCredentials } from '../services/smppServer.js';
 
+function updateStatus(sentToId, status, serverMessageId) {
+    const updateQuery = `UPDATE sent_to SET status = ?, server_message_id = ? WHERE id = ?`;
+    connection.query(updateQuery, [status, serverMessageId, sentToId], (error, results) => {
+        if (error) {
+            console.error(`Error updating SentTo record with ID ${sentToId}:`, error);
+        } else {
+            console.log(`SentTo record with ID ${sentToId} updated successfully.`);
+        }
+    });
+}
+
+function updateIsDelivered(receiptedMessageId) {
+    const updateQuery = `UPDATE sent_to SET is_delivered = ? WHERE server_message_id = ?`;
+    connection.query(updateQuery, [1, receiptedMessageId], (error, results) => {
+        if (error) {
+            console.error(`Error updating is_delivered status for message with ID ${receiptedMessageId}:`, error);
+        } else {
+            console.log(`is_delivered status updated successfully for message with ID ${receiptedMessageId}`);
+        }
+    });
+}
+
 export async function sendSMS(req, res) {
-
-    function updateStatus(sentToId, status, serverMessageId) {
-        const updateQuery = `UPDATE sent_to SET status = ?, server_message_id = ? WHERE id = ?`;
-        connection.query(updateQuery, [status, serverMessageId, sentToId], (error, results) => {
-            if (error) {
-                console.error(`Error updating SentTo record with ID ${sentToId}:`, error);
-            } else {
-                console.log(`SentTo record with ID ${sentToId} updated successfully.`);
-            }
-        });
-    }
-
-    function updateIsDelivered(receiptedMessageId) {
-        const updateQuery = `UPDATE sent_to SET is_delivered = ? WHERE server_message_id = ?`;
-        connection.query(updateQuery, [1, receiptedMessageId], (error, results) => {
-            if (error) {
-                console.error(`Error updating is_delivered status for message with ID ${receiptedMessageId}:`, error);
-            } else {
-                console.log(`is_delivered status updated successfully for message with ID ${receiptedMessageId}`);
-            }
-        });
-    }
 
     try {
         const session = smpp.connect({
@@ -52,6 +52,7 @@ export async function sendSMS(req, res) {
                         console.error("An error occurred:", err);
                         res.status(500).json({ error: 'An error occurred' });
                         reject(err);
+                        return;
                     });
 
                     const messages = req.body.sent_To;
@@ -73,6 +74,7 @@ export async function sendSMS(req, res) {
                                 message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
                             });
                             resolve();
+                            return;
                         });
                     }, timeoutDuration);
 
@@ -104,6 +106,7 @@ export async function sendSMS(req, res) {
                                     message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesNumber} messages delivered successfully.`
                                 });
                                 resolve();
+                                return;
                             });
                         }
                     });
@@ -152,5 +155,6 @@ export async function sendSMS(req, res) {
     } catch (error) {
         console.error("An error occurred:", error);
         res.status(500).json({ error: 'An error occurred' });
+        return;
     }
 }
