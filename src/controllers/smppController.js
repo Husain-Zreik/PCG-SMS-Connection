@@ -89,26 +89,12 @@ export async function sendSMS(req, res) {
                             if (deliverPdu.command_status === 0) {
                                 updateIsDelivered(messageId);
                                 deliveredMessages++;
+                                console.log(`${deliveredMessages} out of ${messagesSuccess} messages delivered successfully`);
                             } else {
                                 console.error(`Error delivering message with ID ${messageId}:`, deliverPdu.command_status);
                             }
                         } else {
                             console.log("No recieved message id");
-                        }
-                        if (deliveredMessages === messagesSuccess) {
-                            console.log('All deliveries received closing connection...');
-                            clearTimeout(timeout);
-                            session.unbind(() => {
-                                session.close();
-                                console.log('Connection closed');
-                                res.status(200).json({
-                                    total: messagesNumber,
-                                    sent: messagesSuccess,
-                                    delivered: deliveredMessages,
-                                    message: `${messagesSuccess} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
-                                });
-                                resolve();
-                            });
                         }
                     });
 
@@ -126,6 +112,7 @@ export async function sendSMS(req, res) {
                                         console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
                                         updateStatus(message.id, 'sent', submitPdu.message_id);
                                         messagesSuccess++;
+                                        console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
 
                                     } else {
                                         console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
@@ -142,12 +129,25 @@ export async function sendSMS(req, res) {
                             });
                     }
 
-                    console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
-                    console.log(`${deliveredMessages} out of ${messagesSuccess} messages delivered successfully`);
+                    if (deliveredMessages === messagesSuccess) {
+                        console.log('All deliveries received closing connection...');
+                        clearTimeout(timeout);
+                        session.unbind(() => {
+                            session.close();
+                            console.log('Connection closed');
+                            res.status(200).json({
+                                total: messagesNumber,
+                                sent: messagesSuccess,
+                                delivered: deliveredMessages,
+                                message: `${messagesSuccess} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
+                            });
+                            resolve();
+                        });
+                    }
 
                     session.on('close', () => {
                         removeBindCredentials(req.body.customer.id);
-                        console.log("Credentials removed\nConnection closed");
+                        console.log("Connection closed");
                     });
                 });
             });
