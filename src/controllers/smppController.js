@@ -80,10 +80,12 @@ export async function sendSMS(req, res) {
 
                         // Update the status only if the message ID matches
                         const messageId = deliverPdu.receipted_message_id;
-                        const matchingMessage = messages.find(message => message.id === messageId);
-                        if (matchingMessage) {
+                        console.log(`the message id is ${messageId}`);
+                        // const matchingMessage = messages.find(message => message.id === messageId);
+                        if (messageId) {
                             if (deliverPdu.command_status === 0) {
                                 updateIsDelivered(messageId);
+                                console.log(`the message id is ${messageId} and it is updated`);
                                 deliveredMessages++;
                             } else {
                                 console.error(`Error delivering message with ID ${messageId}:`, deliverPdu.command_status);
