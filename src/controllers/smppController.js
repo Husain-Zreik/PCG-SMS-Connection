@@ -1,5 +1,6 @@
 import smpp from 'smpp';
 import connection from '../../config/dbConnection.js';
+import startSMPPServer, { stopSMPPServer } from '../services/smppServer.js';
 
 export async function sendSMS(req, res) {
     function updateStatus(sentToId, status, serverMessageId) {
@@ -44,6 +45,8 @@ export async function sendSMS(req, res) {
                         return;
                     }
 
+                    startSMPPServer(req.body.customer.ip, req.body.customer.port, req.body.customer.username, req.body.customer.password);
+
                     const messages = req.body.sent_To;
                     const messagesNumber = messages.length;
                     const timeoutDuration = (req.body.delay * messagesNumber + 60) * 1000;
@@ -57,6 +60,8 @@ export async function sendSMS(req, res) {
                         session.unbind(() => {
                             session.close();
                             console.log('Connection closed');
+                            stopSMPPServer();
+                            console.log('Smpp Server closed');
                             res.status(500).json({
                                 error: 'Request time out and not all messages has been delivered',
                                 total: messagesNumber,
@@ -90,18 +95,6 @@ export async function sendSMS(req, res) {
                                 });
                             }, req.body.delay * 1000);
                         })
-                            .then(() => {
-                                // Attach deliver_sm event listener after submitting each message
-                                session.on('deliver_sm', async (deliverPdu) => {
-                                    console.log('deliver_sm-1', deliverPdu);
-                                    session.send(deliverPdu.response());
-
-                                    if (deliverPdu.command_status === 0) {
-                                        updateIsDelivered(deliverPdu.receipted_message_id);
-                                        deliveredMessages++;
-                                    }
-                                });
-                            })
                             .catch(error => {
                                 console.error('Error sending SMS:', error);
                                 res.status(500).json({ error: 'Error sending SMS' });
@@ -109,6 +102,15 @@ export async function sendSMS(req, res) {
                             });
                     }
 
+                    session.on('deliver_sm', (deliverPdu) => {
+                        console.log('deliver_sm', deliverPdu);
+                        session.send(deliverPdu.response());
+
+                        if (deliverPdu.command_status === 0) {
+                            updateIsDelivered(deliverPdu.receipted_message_id);
+                            deliveredMessages++;
+                        }
+                    });
 
                     console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
 
@@ -118,6 +120,8 @@ export async function sendSMS(req, res) {
                         session.unbind(() => {
                             session.close();
                             console.log('Connection closed');
+                            stopSMPPServer();
+                            console.log('Smpp Server closed');
                             res.status(200).json({
                                 total: messagesNumber,
                                 sent: messagesSuccess,
