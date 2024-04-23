@@ -46,7 +46,7 @@ export async function sendSMS(req, res) {
                         return;
                     }
 
-                    startSMPPServer(req.body.customer.ip, req.body.customer.port, req.body.customer.username, req.body.customer.password);
+                    // startSMPPServer(req.body.customer.ip, req.body.customer.port, req.body.customer.username, req.body.customer.password);
 
                     const messages = req.body.sent_To;
                     const messagesNumber = messages.length;
@@ -61,7 +61,7 @@ export async function sendSMS(req, res) {
                         session.unbind(() => {
                             session.close();
                             console.log('Connection closed');
-                            stopSMPPServer();
+                            // stopSMPPServer();
                             console.log('Smpp Server closed');
                             res.status(500).json({
                                 error: 'Request time out and not all messages has been delivered',
@@ -121,7 +121,7 @@ export async function sendSMS(req, res) {
                         session.unbind(() => {
                             session.close();
                             console.log('Connection closed');
-                            stopSMPPServer();
+                            // stopSMPPServer();
                             console.log('Smpp Server closed');
                             res.status(200).json({
                                 total: messagesNumber,
