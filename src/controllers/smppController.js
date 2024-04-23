@@ -3,6 +3,7 @@ import connection from '../../config/dbConnection.js';
 import { addBindCredentials, removeBindCredentials } from '../services/smppServer.js';
 
 export async function sendSMS(req, res) {
+    console.log(req.body);
 
     function updateStatus(sentToId, status, serverMessageId) {
         const updateQuery = `UPDATE sent_to SET status = ?, server_message_id = ? WHERE id = ?`;
