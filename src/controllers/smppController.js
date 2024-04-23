@@ -33,9 +33,10 @@ export async function sendSMS(req, res) {
             debug: true
         });
 
-        addBindCredentials(req.body.customer.id, req.body.customer);
+        // addBindCredentials(req.body.customer.id, req.body.customer);
+        addBindCredentials();
 
-        return await new Promise((resolve, reject) => {
+        await new Promise((resolve, reject) => {
             session.on('connect', () => {
                 session.bind_transceiver({
                     system_id: req.body.vendor.username,
@@ -143,7 +144,7 @@ export async function sendSMS(req, res) {
                     }
 
                     session.on('close', () => {
-                        removeBindCredentials(req.body.customer.id);
+                        // removeBindCredentials(req.body.customer.id);
                         console.log("Connection closed");
                     });
                 });

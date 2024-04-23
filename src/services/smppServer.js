@@ -107,15 +107,45 @@ export default function startSMPPServer() {
 	});
 }
 
-export function addBindCredentials(key, credential) {
-	bindCredentials[key] = { ...credential };
+async function fetchCustomerDataFromDB() {
+	return new Promise((resolve, reject) => {
+		const query = 'SELECT id, username, password, ip, port FROM carriers WHERE type = ? AND is_deleted = ?';
+		connection.query(query, ['customer', false], (error, results) => {
+			if (error) {
+				reject(error);
+			} else {
+				resolve(results);
+			}
+		});
+	});
 }
 
-export function removeBindCredentials(key) {
-	if (bindCredentials[key]) {
-		delete bindCredentials[key];
-		console.log(`Credentials for customer ${key} removed.`);
-	} else {
-		console.log(`No credentials found for customer ${key}.`);
+export async function addBindCredentials() {
+	try {
+		const customerData = await fetchCustomerDataFromDB();
+		customerData.forEach(customer => {
+			bindCredentials[customer.id] = {
+				username: customer.username,
+				password: customer.password,
+				ip: customer.ip,
+				port: customer.port
+			};
+		});
+		console.log('Credentials added for customers:', Object.keys(bindCredentials));
+	} catch (error) {
+		console.error('Error adding customer credentials:', error);
 	}
 }
+
+// export function addBindCredentials(key, credential) {
+// 	bindCredentials[key] = { ...credential };
+// }
+
+// export function removeBindCredentials(key) {
+// 	if (bindCredentials[key]) {
+// 		delete bindCredentials[key];
+// 		console.log(`Credentials for customer ${key} removed.`);
+// 	} else {
+// 		console.log(`No credentials found for customer ${key}.`);
+// 	}
+// }
