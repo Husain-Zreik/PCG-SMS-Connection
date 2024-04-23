@@ -4,15 +4,17 @@ const { format } = fecha;
 const { createServer } = smpp;
 
 let server;
+let bindCredentials = {};
 
-export default function startSMPPServer(customerIp, customerPort, customerId, customerPassword) {
+export default function startSMPPServer() {
+	console.log("credentials :", bindCredentials);
+
 	var server = createServer({
 		debug: true,
 		rejectUnauthorized: false,
 	}, function (session) {
-		console.log(session);
 
-		// if (session.socket.remoteAddress !== customerIp || session.socket.remotePort !== customerPort) {
+		// if (session.socket.remoteAddress !== customerIp) {
 		// 	console.error('Invalid customer IP address or port');
 		// 	session.close();
 		// 	return;
@@ -22,7 +24,17 @@ export default function startSMPPServer(customerIp, customerPort, customerId, cu
 			session.pause();
 			console.log("Received bind_transceiver request:", pdu);
 
-			if (pdu.system_id == customerId && pdu.password == customerPassword) {
+			let validCredentials = false;
+
+			for (const key in bindCredentials) {
+				const credential = bindCredentials[key];
+				if (pdu.system_id === credential.username && pdu.password === credential.password && session.socket.remoteAddress === credential.ip) {
+					validCredentials = true;
+					break;
+				}
+			}
+
+			if (validCredentials) {
 				session.send(pdu.response());
 				session.resume();
 			} else {
@@ -91,10 +103,14 @@ export default function startSMPPServer(customerIp, customerPort, customerId, cu
 	server.listen(2775, function () {
 		console.log(`SMPP server listening on port 2775`);
 	});
+}
 
-	// server.listen(customerPort, function () {
-	// 	console.log(`SMPP server listening on port ${customerPort}`);
-	// });
+export function addBindCredentials(key, credential) {
+	bindCredentials[key] = { ...credential };
+}
+
+export function removeBindCredentials(key) {
+	delete bindCredentials[key];
 }
 
 let counter = 0;
@@ -116,4 +132,4 @@ export function stopSMPPServer() {
 	}
 }
 
-// startSMPPServer();
+startSMPPServer();

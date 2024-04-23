@@ -3,7 +3,7 @@ import connection from '../../config/dbConnection.js';
 import startSMPPServer, { stopSMPPServer } from '../services/smppServer.js';
 
 export async function sendSMS(req, res) {
-    console.log(req.body);
+
     function updateStatus(sentToId, status, serverMessageId) {
         const updateQuery = `UPDATE sent_to SET status = ?, server_message_id = ? WHERE id = ?`;
         connection.query(updateQuery, [status, serverMessageId, sentToId], (error, results) => {
@@ -33,6 +33,8 @@ export async function sendSMS(req, res) {
             debug: true
         });
 
+        addBindCredentials(req.body.customer.id, req.body.customer);
+
         await new Promise((resolve, reject) => {
             session.on('connect', () => {
                 session.bind_transceiver({
@@ -45,6 +47,12 @@ export async function sendSMS(req, res) {
                         reject(new Error('Error binding to SMPP server'));
                         return;
                     }
+
+                    session.on('error', (err) => {
+                        console.error("An error occurred:", err);
+                        res.status(500).json({ error: 'An error occurred' });
+                        reject(err);
+                    });
 
                     // startSMPPServer(req.body.customer.ip, req.body.customer.port, req.body.customer.username, req.body.customer.password);
 
@@ -61,8 +69,6 @@ export async function sendSMS(req, res) {
                         session.unbind(() => {
                             session.close();
                             console.log('Connection closed');
-                            // stopSMPPServer();
-                            // console.log('Smpp Server closed');
                             res.status(500).json({
                                 error: 'Request time out and not all messages has been delivered',
                                 total: messagesNumber,
@@ -78,18 +84,16 @@ export async function sendSMS(req, res) {
                         console.log('deliver_sm', deliverPdu);
                         session.send(deliverPdu.response());
 
-                        // Update the status only if the message ID matches
                         const messageId = deliverPdu.receipted_message_id;
-                        console.log(`the message id is ${messageId}`);
-                        // const matchingMessage = messages.find(message => message.id === messageId);
                         if (messageId) {
                             if (deliverPdu.command_status === 0) {
                                 updateIsDelivered(messageId);
-                                console.log(`the message id is ${messageId} and it is updated`);
                                 deliveredMessages++;
                             } else {
                                 console.error(`Error delivering message with ID ${messageId}:`, deliverPdu.command_status);
                             }
+                        } else {
+                            console.log("No recieved message id");
                         }
                     });
 
@@ -102,7 +106,7 @@ export async function sendSMS(req, res) {
                                     short_message: message.content,
                                     registered_delivery: 1,
                                 }, (submitPdu) => {
-                                    console.log("submit pdu", submitPdu);
+
                                     if (submitPdu.command_status === 0) {
                                         console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
                                         updateStatus(message.id, 'sent', submitPdu.message_id);
@@ -123,17 +127,8 @@ export async function sendSMS(req, res) {
                             });
                     }
 
-                    // session.on('deliver_sm', (deliverPdu) => {
-                    //     console.log('deliver_sm', deliverPdu);
-                    //     session.send(deliverPdu.response());
-
-                    //     if (deliverPdu.command_status === 0) {
-                    //         updateIsDelivered(deliverPdu.receipted_message_id);
-                    //         deliveredMessages++;
-                    //     }
-                    // });
-
                     console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
+                    console.log(`${deliveredMessages} out of ${messagesSuccess} messages delivered successfully`);
 
                     if (deliveredMessages === messagesSuccess) {
                         console.log('All deliveries received closing connection...');
@@ -141,8 +136,6 @@ export async function sendSMS(req, res) {
                         session.unbind(() => {
                             session.close();
                             console.log('Connection closed');
-                            // stopSMPPServer();
-                            // console.log('Smpp Server closed');
                             res.status(200).json({
                                 total: messagesNumber,
                                 sent: messagesSuccess,
@@ -153,13 +146,8 @@ export async function sendSMS(req, res) {
                         });
                     }
 
-                    session.on('error', (err) => {
-                        console.error("An error occurred:", err);
-                        res.status(500).json({ error: 'An error occurred' });
-                        reject(err);
-                    });
-
                     session.on('close', () => {
+                        removeBindCredentials(req.body.customer.id);
                         console.log('Connection closed');
                     });
                 });
