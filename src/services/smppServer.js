@@ -2,10 +2,6 @@ import smpp from 'smpp';
 import fecha from 'fecha';
 const { format } = fecha;
 const { createServer } = smpp;
-import { startSMPPServer } from './smppServer.js';
-
-startSMPPServer();
-
 
 let counter = 0;
 let bindCredentials = {};
@@ -120,3 +116,5 @@ export function removeBindCredentials(key) {
 		console.log(`No credentials found for customer ${key}.`);
 	}
 }
+
+startSMPPServer();
