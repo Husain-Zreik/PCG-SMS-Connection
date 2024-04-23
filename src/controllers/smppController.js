@@ -61,6 +61,7 @@ export async function sendSMS(req, res) {
                     const timeoutDuration = (req.body.delay * messagesNumber + 60) * 1000;
                     let timeoutReached = false;
                     let messagesSuccess = 0;
+                    let sentMessages = -1;
                     let deliveredMessages = 0;
 
                     const timeout = setTimeout(() => {
@@ -72,9 +73,9 @@ export async function sendSMS(req, res) {
                             res.status(500).json({
                                 error: 'Request time out and not all messages has been delivered',
                                 total: messagesNumber,
-                                sent: messagesSuccess,
+                                sent: sentMessages,
                                 delivered: deliveredMessages,
-                                message: `${messagesSuccess} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
+                                message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
                             });
                             resolve();
                         });
@@ -96,6 +97,22 @@ export async function sendSMS(req, res) {
                         } else {
                             console.log("No recieved message id");
                         }
+
+                        if (deliveredMessages === sentMessages) {
+                            console.log('All deliveries received closing connection...');
+                            clearTimeout(timeout);
+                            session.unbind(() => {
+                                session.close();
+                                console.log('Connection closed');
+                                res.status(200).json({
+                                    total: messagesNumber,
+                                    sent: sentMessages,
+                                    delivered: deliveredMessages,
+                                    message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
+                                });
+                                resolve();
+                            });
+                        }
                     });
 
                     for (let i = 0; i < messagesNumber; i++) {
@@ -113,6 +130,9 @@ export async function sendSMS(req, res) {
                                         updateStatus(message.id, 'sent', submitPdu.message_id);
                                         messagesSuccess++;
                                         console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
+                                        if (i === messagesNumber - 1) {
+                                            sentMessages = messagesSuccess;
+                                        }
 
                                     } else {
                                         console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
@@ -129,21 +149,21 @@ export async function sendSMS(req, res) {
                             });
                     }
 
-                    if (deliveredMessages === messagesSuccess) {
-                        console.log('All deliveries received closing connection...');
-                        clearTimeout(timeout);
-                        session.unbind(() => {
-                            session.close();
-                            console.log('Connection closed');
-                            res.status(200).json({
-                                total: messagesNumber,
-                                sent: messagesSuccess,
-                                delivered: deliveredMessages,
-                                message: `${messagesSuccess} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
-                            });
-                            resolve();
-                        });
-                    }
+                    // if (deliveredMessages === messagesSuccess) {
+                    //     console.log('All deliveries received closing connection...');
+                    //     clearTimeout(timeout);
+                    //     session.unbind(() => {
+                    //         session.close();
+                    //         console.log('Connection closed');
+                    //         res.status(200).json({
+                    //             total: messagesNumber,
+                    //             sent: messagesSuccess,
+                    //             delivered: deliveredMessages,
+                    //             message: `${messagesSuccess} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
+                    //         });
+                    //         resolve();
+                    //     });
+                    // }
 
                     session.on('close', () => {
                         removeBindCredentials(req.body.customer.id);
