@@ -2,6 +2,10 @@ import smpp from 'smpp';
 import fecha from 'fecha';
 const { format } = fecha;
 const { createServer } = smpp;
+import { startSMPPServer } from './smppServer.js';
+
+startSMPPServer();
+
 
 let counter = 0;
 let bindCredentials = {};
@@ -13,7 +17,7 @@ function generateMessageID() {
 	return `${timestamp}${counter.toString().padStart(3, '0')}`;
 }
 
-function startSMPPServer() {
+export function startSMPPServer() {
 	console.log("credentials :", bindCredentials);
 
 	var server = createServer({
@@ -103,8 +107,6 @@ function startSMPPServer() {
 		console.log(`SMPP server listening on port 2775`);
 	});
 }
-
-startSMPPServer();
 
 export function addBindCredentials(key, credential) {
 	bindCredentials[key] = { ...credential };
