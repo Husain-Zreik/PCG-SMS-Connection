@@ -5,24 +5,24 @@ const { createServer } = smpp;
 
 let server;
 
-export default function startSMPPServer(clientIp, clientPort, clientId, clientPassword) {
+export default function startSMPPServer(customerIp, customerPort, customerId, customerPassword) {
 	var server = createServer({
 		debug: true,
 		rejectUnauthorized: false,
 	}, function (session) {
 		console.log(session);
 
-		if (session.socket.remoteAddress !== clientIp || session.socket.remotePort !== clientPort) {
-			console.error('Invalid client IP address or port');
-			session.close();
-			return;
-		}
+		// if (session.socket.remoteAddress !== customerIp || session.socket.remotePort !== customerPort) {
+		// 	console.error('Invalid customer IP address or port');
+		// 	session.close();
+		// 	return;
+		// }
 
 		session.on('bind_transceiver', function (pdu) {
 			session.pause();
 			console.log("Received bind_transceiver request:", pdu);
 
-			if (pdu.system_id == clientId && pdu.password == clientPassword) {
+			if (pdu.system_id == customerId && pdu.password == customerPassword) {
 				session.send(pdu.response());
 				session.resume();
 			} else {
@@ -88,9 +88,13 @@ export default function startSMPPServer(clientIp, clientPort, clientId, clientPa
 		});
 	});
 
-	server.listen(clientPort, function () {
-		console.log(`SMPP server listening on port ${clientPort}`);
+	server.listen(2775, function () {
+		console.log(`SMPP server listening on port 2775`);
 	});
+
+	// server.listen(customerPort, function () {
+	// 	console.log(`SMPP server listening on port ${customerPort}`);
+	// });
 }
 
 let counter = 0;
