@@ -1,3 +1,4 @@
+import connection from '../../config/dbConnection.js';
 import smpp from 'smpp';
 import fecha from 'fecha';
 const { format } = fecha;
