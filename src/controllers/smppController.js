@@ -1,6 +1,6 @@
 import smpp from 'smpp';
 import connection from '../../config/dbConnection.js';
-import startSMPPServer, { addBindCredentials, removeBindCredentials, stopSMPPServer } from '../services/smppServer.js';
+import { addBindCredentials, removeBindCredentials } from '../services/smppServer.js';
 
 export async function sendSMS(req, res) {
 
@@ -54,24 +54,19 @@ export async function sendSMS(req, res) {
                         reject(err);
                     });
 
-                    // startSMPPServer(req.body.customer.ip, req.body.customer.port, req.body.customer.username, req.body.customer.password);
-
                     const messages = req.body.sent_To;
                     const messagesNumber = messages.length;
                     const timeoutDuration = (req.body.delay * messagesNumber + 60) * 1000;
-                    let timeoutReached = false;
                     let messagesSuccess = 0;
                     let sentMessages = -1;
                     let deliveredMessages = 0;
 
                     const timeout = setTimeout(() => {
-                        timeoutReached = true;
                         console.log('Timeout reached, closing connection...');
                         session.unbind(() => {
                             session.close();
-                            console.log('Connection closed');
                             res.status(500).json({
-                                error: 'Request time out and not all messages has been delivered',
+                                error: 'Request time out and not all messages have been delivered',
                                 total: messagesNumber,
                                 sent: sentMessages,
                                 delivered: deliveredMessages,
@@ -95,20 +90,19 @@ export async function sendSMS(req, res) {
                                 console.error(`Error delivering message with ID ${messageId}:`, deliverPdu.command_status);
                             }
                         } else {
-                            console.log("No recieved message id");
+                            console.log("No received message id");
                         }
 
                         if (deliveredMessages === sentMessages) {
-                            console.log('All deliveries received closing connection...');
+                            console.log('All deliveries received, closing connection...');
                             clearTimeout(timeout);
                             session.unbind(() => {
                                 session.close();
-                                console.log('Connection closed');
                                 res.status(200).json({
                                     total: messagesNumber,
                                     sent: sentMessages,
                                     delivered: deliveredMessages,
-                                    message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
+                                    message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesNumber} messages delivered successfully.`
                                 });
                                 resolve();
                             });
@@ -148,22 +142,6 @@ export async function sendSMS(req, res) {
                                 reject(error);
                             });
                     }
-
-                    // if (deliveredMessages === messagesSuccess) {
-                    //     console.log('All deliveries received closing connection...');
-                    //     clearTimeout(timeout);
-                    //     session.unbind(() => {
-                    //         session.close();
-                    //         console.log('Connection closed');
-                    //         res.status(200).json({
-                    //             total: messagesNumber,
-                    //             sent: messagesSuccess,
-                    //             delivered: deliveredMessages,
-                    //             message: `${messagesSuccess} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
-                    //         });
-                    //         resolve();
-                    //     });
-                    // }
 
                     session.on('close', () => {
                         removeBindCredentials(req.body.customer.id);
