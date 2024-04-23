@@ -13,7 +13,7 @@ function generateMessageID() {
 	return `${timestamp}${counter.toString().padStart(3, '0')}`;
 }
 
-export default function startSMPPServer() {
+function startSMPPServer() {
 	console.log("credentials :", bindCredentials);
 
 	var server = createServer({
@@ -104,6 +104,8 @@ export default function startSMPPServer() {
 	});
 }
 
+startSMPPServer();
+
 export function addBindCredentials(key, credential) {
 	bindCredentials[key] = { ...credential };
 }
@@ -116,5 +118,3 @@ export function removeBindCredentials(key) {
 		console.log(`No credentials found for customer ${key}.`);
 	}
 }
-
-() => startSMPPServer();
