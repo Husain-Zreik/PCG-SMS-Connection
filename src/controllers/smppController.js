@@ -89,6 +89,22 @@ export async function sendSMS(req, res) {
                             if (deliverPdu.command_status === 0) {
                                 updateIsDelivered(messageId);
                                 deliveredMessages++;
+
+                                if (deliveredMessages === messagesSuccess) {
+                                    console.log('All deliveries received closing connection...');
+                                    clearTimeout(timeout);
+                                    session.unbind(() => {
+                                        session.close();
+                                        console.log('Connection closed');
+                                        res.status(200).json({
+                                            total: messagesNumber,
+                                            sent: messagesSuccess,
+                                            delivered: deliveredMessages,
+                                            message: `${messagesSuccess} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
+                                        });
+                                        resolve();
+                                    });
+                                }
                             } else {
                                 console.error(`Error delivering message with ID ${messageId}:`, deliverPdu.command_status);
                             }
@@ -130,25 +146,9 @@ export async function sendSMS(req, res) {
                     console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
                     console.log(`${deliveredMessages} out of ${messagesSuccess} messages delivered successfully`);
 
-                    if (deliveredMessages === messagesSuccess) {
-                        console.log('All deliveries received closing connection...');
-                        clearTimeout(timeout);
-                        session.unbind(() => {
-                            session.close();
-                            console.log('Connection closed');
-                            res.status(200).json({
-                                total: messagesNumber,
-                                sent: messagesSuccess,
-                                delivered: deliveredMessages,
-                                message: `${messagesSuccess} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
-                            });
-                            resolve();
-                        });
-                    }
-
                     session.on('close', () => {
                         removeBindCredentials(req.body.customer.id);
-                        console.log('Connection closed');
+                        console.log("Credentials removed\nConnection closed");
                     });
                 });
             });
