@@ -13,6 +13,15 @@ function generateMessageID() {
 	return `${timestamp}${counter.toString().padStart(3, '0')}`;
 }
 
+function ipv6ToIpv4(ipv6Address) {
+	if (ipv6Address.startsWith('::ffff:')) {
+		const ipv4Part = ipv6Address.split(':').slice(-1)[0];
+		return ipv4Part;
+	} else {
+		return ipv6Address;
+	}
+}
+
 export function startSMPPServer() {
 	console.log("credentials :", bindCredentials);
 
@@ -29,10 +38,7 @@ export function startSMPPServer() {
 
 			for (const key in bindCredentials) {
 				const credential = bindCredentials[key];
-				console.log(credential);
-				console.log(session.socket.remoteAddress);
-				const ipv4Part = session.socket.remoteAddress.split(':').slice(-1)[0];
-				console.log(ipv4Part);
+				const ipv4Part = ipv6ToIpv4(session.socket.remoteAddress);
 				if (pdu.system_id === credential.username && pdu.password === credential.password && ipv4Part === credential.ip) {
 					validCredentials = true;
 					break;
