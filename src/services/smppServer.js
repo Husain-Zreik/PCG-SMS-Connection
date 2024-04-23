@@ -23,7 +23,6 @@ function ipv6ToIpv4(ipv6Address) {
 }
 
 export default function startSMPPServer() {
-	console.log("credentials :", bindCredentials);
 
 	var server = createServer({
 		debug: true,
@@ -84,12 +83,6 @@ export default function startSMPPServer() {
 					short_message: {
 						message: deliveryReceiptMessage,
 					},
-				}, function (deliverPdu) {
-					if (deliverPdu.command_status !== 255) {
-						console.log(`Successful Message ID ${messageID}:`);
-					} else {
-						console.error(`Error sending SMS to ${messageID}:`);
-					}
 				});
 
 			});
