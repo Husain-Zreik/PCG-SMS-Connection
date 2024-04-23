@@ -3,8 +3,15 @@ import fecha from 'fecha';
 const { format } = fecha;
 const { createServer } = smpp;
 
-let server;
+let counter = 0;
 let bindCredentials = {};
+
+function generateMessageID() {
+	const timestamp = new Date().toISOString().replace(/\D/g, '').slice(0, -3);
+	counter++;
+
+	return `${timestamp}${counter.toString().padStart(3, '0')}`;
+}
 
 export default function startSMPPServer() {
 	console.log("credentials :", bindCredentials);
@@ -13,12 +20,6 @@ export default function startSMPPServer() {
 		debug: true,
 		rejectUnauthorized: false,
 	}, function (session) {
-
-		// if (session.socket.remoteAddress !== customerIp) {
-		// 	console.error('Invalid customer IP address or port');
-		// 	session.close();
-		// 	return;
-		// }
 
 		session.on('bind_transceiver', function (pdu) {
 			session.pause();
@@ -50,7 +51,6 @@ export default function startSMPPServer() {
 
 				session.send(pdu.response({ message_id: messageID }));
 
-				// const buf = Buffer.from(`id:${messageID} sub:001 dlvrd:001 submit date:${format(new Date(), 'YYMMDDHHmm')} done date:${format(new Date(), 'YYMMDDHHmm')} stat:DELIVRD err:000 text:`);
 				const deliveryReceiptMessage = `id:${messageID} sub:001 dlvrd:001 submit date:${currentTime} done date:${currentTime} stat:DELIVRD err:000 text: ${messageContent}`;
 
 				session.deliver_sm({
@@ -72,7 +72,6 @@ export default function startSMPPServer() {
 					message_state: 2,
 					receipted_message_id: messageID,
 					short_message: {
-						// udh: new Uint8Array(buf),
 						message: deliveryReceiptMessage,
 					},
 				}, function (deliverPdu) {
@@ -118,23 +117,4 @@ export function removeBindCredentials(key) {
 	}
 }
 
-let counter = 0;
-
-function generateMessageID() {
-	const timestamp = new Date().toISOString().replace(/\D/g, '').slice(0, -3);
-	counter++;
-
-	return `${timestamp}${counter.toString().padStart(3, '0')}`;
-}
-
-export function stopSMPPServer() {
-	if (server) {
-		server.close(() => {
-			console.log('SMPP server stopped');
-		});
-	} else {
-		console.warn('SMPP server is not running');
-	}
-}
-
-startSMPPServer();
+() => startSMPPServer();
