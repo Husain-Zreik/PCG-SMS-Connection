@@ -1,4 +1,4 @@
-import { sendSMS, receiveSMS } from '../controllers/smppController.js';
+import { sendSMS } from '../controllers/smppController.js';
 import { Router } from 'express';
 
 const router = Router();
