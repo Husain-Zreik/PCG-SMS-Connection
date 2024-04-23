@@ -110,11 +110,11 @@ export function addBindCredentials(key, credential) {
 }
 
 export function removeBindCredentials(key) {
-	if (bindCredentials[customerId]) {
-		delete bindCredentials[customerId];
-		console.log(`Credentials for customer ${customerId} removed.`);
+	if (bindCredentials[key]) {
+		delete bindCredentials[key];
+		console.log(`Credentials for customer ${key} removed.`);
 	} else {
-		console.log(`No credentials found for customer ${customerId}.`);
+		console.log(`No credentials found for customer ${key}.`);
 	}
 }
 
