@@ -3,7 +3,6 @@ import connection from '../../config/dbConnection.js';
 import { addBindCredentials, removeBindCredentials } from '../services/smppServer.js';
 
 export async function sendSMS(req, res) {
-    console.log(req.body);
 
     function updateStatus(sentToId, status, serverMessageId) {
         const updateQuery = `UPDATE sent_to SET status = ?, server_message_id = ? WHERE id = ?`;
@@ -78,7 +77,6 @@ export async function sendSMS(req, res) {
                     }, timeoutDuration);
 
                     session.on('deliver_sm', (deliverPdu) => {
-                        console.log('deliver_sm', deliverPdu);
                         session.send(deliverPdu.response());
 
                         const messageId = deliverPdu.receipted_message_id;
@@ -155,8 +153,4 @@ export async function sendSMS(req, res) {
         console.error("An error occurred:", error);
         res.status(500).json({ error: 'An error occurred' });
     }
-}
-
-export function receiveSMS(req, res) {
-    // Implement the logic to receive SMS messages
 }
