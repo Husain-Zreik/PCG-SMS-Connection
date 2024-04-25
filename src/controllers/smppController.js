@@ -42,7 +42,7 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
                     resolve();
                 } else {
                     console.error(`Error not Connected. Retrying...`);
-                    return await testConnection(session, maxAttempts, currentAttempt + 1);
+                    await testConnection(session, maxAttempts, currentAttempt + 1);
                 }
             });
         }, 6000);
@@ -138,40 +138,41 @@ export async function sendSMS(req, res) {
                         }
                     });
 
-                    await testConnection(session);
+                    await testConnection(session).then(async () => {
 
-                    for (let i = 0; i < messagesNumber; i++) {
-                        const message = messages[i];
-                        await new Promise((innerResolve) => {
-                            setTimeout(() => {
-                                session.submit_sm({
-                                    destination_addr: message.number,
-                                    short_message: message.content,
-                                    registered_delivery: 1,
-                                }, (submitPdu) => {
+                        for (let i = 0; i < messagesNumber; i++) {
+                            const message = messages[i];
+                            await new Promise((innerResolve) => {
+                                setTimeout(() => {
+                                    session.submit_sm({
+                                        destination_addr: message.number,
+                                        short_message: message.content,
+                                        registered_delivery: 1,
+                                    }, (submitPdu) => {
 
-                                    if (submitPdu.command_status === 0) {
-                                        console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
-                                        updateStatus(message.id, 'sent', submitPdu.message_id);
-                                        messagesSuccess++;
-                                        console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
-                                        if (i === messagesNumber - 1) {
-                                            sentMessages = messagesSuccess;
+                                        if (submitPdu.command_status === 0) {
+                                            console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
+                                            updateStatus(message.id, 'sent', submitPdu.message_id);
+                                            messagesSuccess++;
+                                            console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
+                                            if (i === messagesNumber - 1) {
+                                                sentMessages = messagesSuccess;
+                                            }
+
+                                        } else {
+                                            console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
+                                            updateStatus(message.id, 'failed', submitPdu.message_id);
                                         }
-
-                                    } else {
-                                        console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
-                                        updateStatus(message.id, 'failed', submitPdu.message_id);
-                                    }
-                                    innerResolve();
+                                        innerResolve();
+                                    });
+                                }, req.body.delay * 1000);
+                            })
+                                .catch(error => {
+                                    console.error('Error sending SMS:', error);
+                                    reject(error);
                                 });
-                            }, req.body.delay * 1000);
-                        })
-                            .catch(error => {
-                                console.error('Error sending SMS:', error);
-                                reject(error);
-                            });
-                    }
+                        }
+                    })
 
                     session.on('close', () => {
                         console.log("Connection closed by server");
