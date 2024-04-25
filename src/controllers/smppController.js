@@ -29,7 +29,6 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
         console.log(`test : `, currentAttempt);
         setTimeout(async () => {
             if (currentAttempt > maxAttempts) {
-                // reject(new Error('Max attempts reached without establishing connection'));
                 reject('Max attempts reached without establishing connection');
                 return;
             }
@@ -80,6 +79,8 @@ export async function sendSMS(req, res) {
                         res.status(500).json({ error: 'An error occurred' });
                         reject(err);
                     });
+
+                    await testConnection(session);
 
 
                     const messages = req.body.sent_To;
@@ -137,7 +138,7 @@ export async function sendSMS(req, res) {
                         }
                     });
 
-                    await testConnection(session);
+                    // await testConnection(session);
 
                     for (let i = 0; i < messagesNumber; i++) {
                         const message = messages[i];
