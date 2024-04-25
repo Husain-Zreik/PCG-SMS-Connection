@@ -81,7 +81,6 @@ export async function sendSMS(req, res) {
                         reject(err);
                     });
 
-
                     const messages = req.body.sent_To;
                     const messagesNumber = messages.length;
                     const timeoutDuration = (req.body.delay * messagesNumber + 60) * 1000;
@@ -91,6 +90,13 @@ export async function sendSMS(req, res) {
 
                     const timeout = setTimeout(() => {
                         console.log('Timeout reached, closing connection...');
+                        res.status(500).json({
+                            error: 'Request time out and not all messages have been delivered',
+                            total: messagesNumber,
+                            sent: sentMessages,
+                            delivered: deliveredMessages,
+                            message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
+                        });
                         session.unbind(() => {
                             session.close();
                             console.log("timeOut closing");
@@ -119,7 +125,7 @@ export async function sendSMS(req, res) {
                                 console.error(`Error delivering message with ID ${messageId}:`, deliverPdu.command_status);
                             }
                         } else {
-                            console.log("No received message id");
+                            console.log("No received message id or test message");
                         }
 
                         if (deliveredMessages === sentMessages) {
@@ -142,6 +148,8 @@ export async function sendSMS(req, res) {
                                 // });
                                 resolve();
                             });
+                        } else {
+                            console.log("NOT time to finish");
                         }
                     });
 
