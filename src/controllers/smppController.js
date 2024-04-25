@@ -58,7 +58,7 @@ export async function sendSMS(req, res) {
             debug: true
         });
 
-        addBindCredentials(req.body.user_id);
+        await addBindCredentials(req.body.user_id);
         selectCustomerCredentials(req.body.customer.id);
 
         await new Promise((resolve, reject) => {

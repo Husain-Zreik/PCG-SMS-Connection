@@ -156,6 +156,7 @@ export async function addBindCredentials(user_id) {
 
 export async function selectCustomerCredentials(customerId) {
 	try {
+		console.log(customerId);
 		if (bindCredentials.hasOwnProperty(customerId)) {
 			selectedCustomerCredentials = bindCredentials[customerId];
 			console.log('selectedCustomerCredentials:', selectedCustomerCredentials);
