@@ -82,15 +82,6 @@ export async function sendSMS(req, res) {
                         reject(err);
                     });
 
-                    try {
-                        await testConnection(session);
-                    } catch (error) {
-                        console.error('Error sending SMS:', error);
-                        res.status(500).json({ error: 'Error sending SMS', detail: error });
-                        reject(error);
-                        return;
-                    }
-
                     const messages = req.body.sent_To;
                     const messagesNumber = messages.length;
                     const timeoutDuration = (req.body.delay * messagesNumber + 60) * 1000;
@@ -144,6 +135,8 @@ export async function sendSMS(req, res) {
                             });
                         }
                     });
+
+                    await testConnection(session);
 
                     for (let i = 0; i < messagesNumber; i++) {
                         const message = messages[i];
