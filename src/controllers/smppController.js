@@ -93,6 +93,7 @@ export async function sendSMS(req, res) {
                         console.log('Timeout reached, closing connection...');
                         session.unbind(() => {
                             session.close();
+                            console.log("timeOut closing");
                             res.status(500).json({
                                 error: 'Request time out and not all messages have been delivered',
                                 total: messagesNumber,
@@ -125,6 +126,7 @@ export async function sendSMS(req, res) {
                             clearTimeout(timeout);
                             session.unbind(() => {
                                 session.close();
+                                console.log("Finish closing");
                                 res.status(200).json({
                                     total: messagesNumber,
                                     sent: sentMessages,
@@ -173,7 +175,7 @@ export async function sendSMS(req, res) {
                     }
 
                     session.on('close', () => {
-                        console.log("Connection closed");
+                        console.log("the server closed the Connection");
                         resolve();
                     });
                 });
