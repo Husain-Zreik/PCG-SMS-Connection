@@ -29,7 +29,9 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
         console.log(`test : `, currentAttempt);
         setTimeout(async () => {
             if (currentAttempt > maxAttempts) {
-                reject(new Error('Max attempts reached without establishing connection'));
+                // reject(new Error('Max attempts reached without establishing connection'));
+                res.status(500).json({ error: 'Max attempts reached without establishing connection' });
+                reject();
                 return;
             }
 
@@ -177,6 +179,7 @@ export async function sendSMS(req, res) {
 
                     session.on('close', () => {
                         console.log("Connection closed");
+                        resolve();
                     });
                 });
             });
