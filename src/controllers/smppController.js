@@ -30,6 +30,7 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
         setTimeout(async () => {
             if (currentAttempt > maxAttempts) {
                 reject('Max attempts reached without establishing connection');
+                return;
             }
 
             session.submit_sm({
@@ -40,6 +41,7 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
                 if (submitPdu.command_status === 0) {
                     console.log(`Successful Connected`);
                     resolve(`Successful Connected`);
+                    return
                 } else {
                     console.error(`Error not Connected. Retrying...`);
                     await testConnection(session, maxAttempts, currentAttempt + 1);
