@@ -62,7 +62,7 @@ export async function sendSMS(req, res) {
 
         addBindCredentials(req.body.user_id);
 
-        await new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             session.on('connect', () => {
                 session.bind_transceiver({
                     system_id: req.body.vendor.username,
@@ -99,16 +99,9 @@ export async function sendSMS(req, res) {
                         });
                         session.unbind(() => {
                             session.close();
-                            console.log("timeOut closing");
-                            res.status(500).json({
-                                error: 'Request time out and not all messages have been delivered',
-                                total: messagesNumber,
-                                sent: sentMessages,
-                                delivered: deliveredMessages,
-                                message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
-                            });
                             resolve();
                         });
+                        resolve();
                     }, timeoutDuration);
 
                     session.on('deliver_sm', (deliverPdu) => {
@@ -140,14 +133,8 @@ export async function sendSMS(req, res) {
                             session.unbind(() => {
                                 console.log("Finish closing");
                                 session.close();
-                                // res.status(200).json({
-                                //     total: messagesNumber,
-                                //     sent: sentMessages,
-                                //     delivered: deliveredMessages,
-                                //     message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesNumber} messages delivered successfully.`
-                                // });
-                                resolve();
                             });
+                            resolve();
                         } else {
                             console.log("NOT time to finish");
                         }
