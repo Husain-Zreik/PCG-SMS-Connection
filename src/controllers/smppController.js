@@ -30,8 +30,7 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
         setTimeout(async () => {
             if (currentAttempt > maxAttempts) {
                 // reject(new Error('Max attempts reached without establishing connection'));
-                res.status(500).json({ error: 'Max attempts reached without establishing connection' });
-                reject();
+                reject('Max attempts reached without establishing connection');
                 return;
             }
 
@@ -48,11 +47,12 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
                     await testConnection(session, maxAttempts, currentAttempt + 1);
                 }
             });
-        }, 5000);
+        }, 9000);
     });
 }
 
 export async function sendSMS(req, res) {
+    console.log(req.body)
 
     try {
         const session = smpp.connect({
