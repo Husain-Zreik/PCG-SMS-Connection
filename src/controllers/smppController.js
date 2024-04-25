@@ -26,6 +26,7 @@ function updateIsDelivered(receiptedMessageId) {
 
 async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
     return new Promise((resolve, reject) => {
+        console.log(`test : `, currentAttempt);
         setTimeout(async () => {
             if (currentAttempt > maxAttempts) {
                 reject(new Error('Max attempts reached without establishing connection'));
@@ -41,7 +42,7 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
                     resolve();
                 } else {
                     console.error(`Error not Connected. Retrying...`);
-                    await testConnection(session, delay, maxAttempts, currentAttempt + 1);
+                    await testConnection(session, maxAttempts, currentAttempt + 1);
                 }
             });
         }, 5000);
