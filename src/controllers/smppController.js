@@ -42,7 +42,7 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
                     resolve();
                 } else {
                     console.error(`Error not Connected. Retrying...`);
-                    await testConnection(session, maxAttempts, currentAttempt + 1);
+                    return await testConnection(session, maxAttempts, currentAttempt + 1);
                 }
             });
         }, 6000);
@@ -133,6 +133,7 @@ export async function sendSMS(req, res) {
                                     }
                                 });
                             });
+                            session.close();
                             console.log("after unbinddd")
                         }
                     });
