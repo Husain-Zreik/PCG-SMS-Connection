@@ -94,21 +94,21 @@ export async function sendSMS(req, res) {
 
                     const timeout = setTimeout(() => {
                         console.log('Timeout reached, closing connection...');
-                        session.unbind(() => {
-                            resolve({
-                                status: 500,
-                                data: {
-                                    error: 'Request time out and not all messages have been delivered',
-                                    total: messagesNumber,
-                                    sent: sentMessages,
-                                    delivered: deliveredMessages,
-                                    message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
-                                }
-                            });
-                            console.log("after unbinddd not good    ")
-                            finished();
-                            session.close();
+                        session.unbind();
+                        console.log("after unbinddd not good    ")
+                        finished();
+                        session.close();
+                        resolve({
+                            status: 500,
+                            data: {
+                                error: 'Request time out and not all messages have been delivered',
+                                total: messagesNumber,
+                                sent: sentMessages,
+                                delivered: deliveredMessages,
+                                message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
+                            }
                         });
+
                     }, timeoutDuration);
 
                     session.on('deliver_sm', (deliverPdu) => {
