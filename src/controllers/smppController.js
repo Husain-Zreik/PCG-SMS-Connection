@@ -98,7 +98,7 @@ export async function sendSMS(req, res) {
                                     message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
                                 }
                             });
-                            console.log("after unbinddd not good")
+                            console.log("after unbinddd not good    ")
                             finished();
                             session.close();
                         });

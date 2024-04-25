@@ -110,10 +110,13 @@ export default function startSMPPServer() {
 			session.on('enquire_link', function (pdu) {
 				if (is_finished) {
 					session.unbind(() => {
-						console.log('Session unbound from client');
+						console.log('Session unbound from server');
+						session.close();
+						console.log('Session closed from server');
 					});
+				} else {
+					session.send(pdu.response());
 				}
-				session.send(pdu.response());
 			});
 		});
 	});
