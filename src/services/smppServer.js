@@ -110,6 +110,10 @@ export default function startSMPPServer() {
 			session.on('enquire_link', function (pdu) {
 				if (is_finished) {
 					session.unbind(() => {
+						counter = 0;
+						is_finished = 0;
+						bindCredentials = {};
+						selectedCustomerCredentials = {};
 						console.log('Session unbound from server');
 						session.close();
 						console.log('Session closed from server');
