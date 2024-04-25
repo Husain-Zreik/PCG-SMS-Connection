@@ -6,6 +6,7 @@ const { createServer } = smpp;
 
 let counter = 0;
 let bindCredentials = {};
+let selectedCustomerCredentials = {};
 
 function generateMessageID() {
 	const timestamp = new Date().toISOString().replace(/\D/g, '').slice(0, -3);
@@ -34,15 +35,19 @@ export default function startSMPPServer() {
 			session.pause();
 			console.log("Received bind_transceiver request:", pdu);
 
+			const ipv4Part = ipv6ToIpv4(session.socket.remoteAddress);
 			let validCredentials = false;
 
-			for (const key in bindCredentials) {
-				const credential = bindCredentials[key];
-				const ipv4Part = ipv6ToIpv4(session.socket.remoteAddress);
-				if (pdu.system_id === credential.username && pdu.password === credential.password && ipv4Part === credential.ip) {
-					validCredentials = true;
-					break;
-				}
+			// for (const key in bindCredentials) {
+			// 	const credential = bindCredentials[key];
+			// 	if (pdu.system_id === credential.username && pdu.password === credential.password && ipv4Part === credential.ip) {
+			// 		validCredentials = true;
+			// 		break;
+			// 	}
+			// }
+
+			if (pdu.system_id === selectedCustomerCredentials.username && pdu.password === selectedCustomerCredentials.password && ipv4Part === selectedCustomerCredentials.ip) {
+				validCredentials = true;
 			}
 
 			if (validCredentials) {
@@ -146,5 +151,18 @@ export async function addBindCredentials(user_id) {
 		console.log('bindCredentials:', bindCredentials);
 	} catch (error) {
 		console.error('Error adding customer credentials:', error);
+	}
+}
+
+export async function selectCustomerCredentials(customerId) {
+	try {
+		if (bindCredentials.hasOwnProperty(customerId)) {
+			selectedCustomerCredentials = bindCredentials[customerId];
+			console.log('selectedCustomerCredentials:', selectedCustomerCredentials);
+		} else {
+			throw new Error(`Customer with ID ${customerId} not found.`);
+		}
+	} catch (error) {
+		console.error('Error selecting customer credentials:', error);
 	}
 }
