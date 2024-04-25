@@ -45,13 +45,14 @@ export default function startSMPPServer() {
 				}
 			}
 
-			if (validCredentials) {
-				session.send(pdu.response());
-				session.resume();
-			} else {
-				session.send(pdu.response({ command_status: smpp.ESME_RBINDFAIL }));
-				session.close();
-			}
+			session.send(pdu.response());
+			// if (validCredentials) {
+			// 	session.send(pdu.response());
+			// 	session.resume();
+			// } else {
+			// 	session.send(pdu.response({ command_status: smpp.ESME_RBINDFAIL }));
+			// 	session.close();
+			// }
 
 			session.on('submit_sm', function (pdu) {
 				const messageID = generateMessageID();
