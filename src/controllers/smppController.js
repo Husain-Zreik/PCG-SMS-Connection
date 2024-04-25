@@ -39,7 +39,7 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
             }, async (submitPdu) => {
                 if (submitPdu.command_status === 0) {
                     console.log(`Successful Connected`);
-                    resolve();
+                    resolve(`Successful Connected`);
                 } else {
                     console.error(`Error not Connected. Retrying...`);
                     await testConnection(session, maxAttempts, currentAttempt + 1);
@@ -59,7 +59,7 @@ export async function sendSMS(req, res) {
         });
 
         await addBindCredentials(req.body.user_id);
-        selectCustomerCredentials(req.body.customer.id);
+        await selectCustomerCredentials(req.body.customer.id);
 
         await new Promise((resolve, reject) => {
             session.on('connect', () => {
