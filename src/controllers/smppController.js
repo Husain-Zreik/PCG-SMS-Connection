@@ -124,19 +124,15 @@ export async function sendSMS(req, res) {
                         if (deliveredMessages - 1 === sentMessages) {
                             console.log('All deliveries received, closing connection...');
                             clearTimeout(timeout);
-                            console.log('test 1');
                             session.unbind(() => {
-                                console.log('test 2');
                                 console.log("Finish closing");
                                 session.close();
-                                console.log('test 3');
                                 res.status(200).json({
                                     total: messagesNumber,
                                     sent: sentMessages,
                                     delivered: deliveredMessages - 1,
                                     message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages - 1} out of ${messagesNumber} messages delivered successfully.`
                                 });
-                                console.log('test 4');
                                 resolve();
                             });
                         }
@@ -180,7 +176,15 @@ export async function sendSMS(req, res) {
 
                     session.on('close', () => {
                         console.log("the server closed the Connection");
+                        res.status(200).json({
+                            total: messagesNumber,
+                            sent: sentMessages,
+                            delivered: deliveredMessages - 1,
+                            message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages - 1} out of ${messagesNumber} messages delivered successfully.`
+                        });
                         resolve();
+                        console.log("Finish closing");
+                        session.close();
                     });
                 });
             });
