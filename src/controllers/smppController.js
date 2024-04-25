@@ -72,7 +72,7 @@ export async function sendSMS(req, res) {
                     if (bindPdu.command_status !== 0) {
                         console.error("Error binding to SMPP server:", bindPdu.command_status);
                         res.status(500).json({ error: 'Error binding to SMPP server' });
-                        // reject(new Error('Error binding to SMPP server'));
+                        reject('Error binding to SMPP server');
                         return;
                     }
 
@@ -87,6 +87,8 @@ export async function sendSMS(req, res) {
                     } catch (error) {
                         console.error('Error sending SMS:', error);
                         res.status(500).json({ error: 'Error sending SMS', detail: error });
+                        reject(error);
+                        return;
                     }
 
                     const messages = req.body.sent_To;
