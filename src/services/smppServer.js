@@ -158,5 +158,3 @@ export async function addBindCredentials() {
 // 		console.log(`No credentials found for customer ${key}.`);
 // 	}
 // }
-
-startSMPPServer()

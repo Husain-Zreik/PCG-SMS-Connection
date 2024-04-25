@@ -1,4 +1,4 @@
-// import startSMPPServer from './src/services/smppServer.js';
+import startSMPPServer from './src/services/smppServer.js';
 import connection from './config/dbConnection.js';
 import smsRouter from './src/routes/smsRoutes.js';
 import bodyParser from 'body-parser';
@@ -22,7 +22,8 @@ server.listen(port, ipAddress, (err) => {
         return;
     }
     console.log(`HTTP Server running at http://${ipAddress}:${port}/`);
-    // startSMPPServer();
+    startSMPPServer();
+    addBindCredentials();
 });
 
 connection.connect((err) => {
