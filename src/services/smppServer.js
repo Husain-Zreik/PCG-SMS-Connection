@@ -38,9 +38,10 @@ export default function startSMPPServer() {
 
 			for (const key in bindCredentials) {
 				const credential = bindCredentials[key];
-				// const ipv4Part = ipv6ToIpv4(session.socket.remoteAddress);
-				// if (pdu.system_id === credential.username && pdu.password === credential.password && ipv4Part === credential.ip) {
-				if (pdu.system_id === credential.username && pdu.password === credential.password) {
+				const ipv4Part = ipv6ToIpv4(session.socket.remoteAddress);
+				console.log(ipv4Part, "credentials ip :", credential.ip)
+				if (pdu.system_id === credential.username && pdu.password === credential.password && ipv4Part === credential.ip) {
+					// if (pdu.system_id === credential.username && pdu.password === credential.password) {
 					validCredentials = true;
 					break;
 				}
