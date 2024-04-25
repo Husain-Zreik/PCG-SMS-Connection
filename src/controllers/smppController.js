@@ -24,6 +24,30 @@ function updateIsDelivered(receiptedMessageId) {
     });
 }
 
+async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
+    return new Promise((resolve, reject) => {
+        setTimeout(async () => {
+            if (currentAttempt > maxAttempts) {
+                reject(new Error('Max attempts reached without establishing connection'));
+                return;
+            }
+
+            session.submit_sm({
+                short_message: "test connection",
+                registered_delivery: 1,
+            }, async (submitPdu) => {
+                if (submitPdu.command_status === 0) {
+                    console.log(`Successful Connected`);
+                    resolve();
+                } else {
+                    console.error(`Error not Connected. Retrying...`);
+                    await testConnection(session, delay, maxAttempts, currentAttempt + 1);
+                }
+            });
+        }, 5000);
+    });
+}
+
 export async function sendSMS(req, res) {
 
     try {
@@ -33,7 +57,6 @@ export async function sendSMS(req, res) {
             debug: true
         });
 
-        // addBindCredentials(req.body.customer.id, req.body.customer);
         addBindCredentials(req.body.user_id);
 
         await new Promise((resolve, reject) => {
@@ -54,6 +77,15 @@ export async function sendSMS(req, res) {
                         res.status(500).json({ error: 'An error occurred' });
                         reject(err);
                     });
+
+                    try {
+                        await testConnection(session);
+                    } catch (error) {
+                        console.error('Error testing connection:', error);
+                        res.status(500).json({ error: 'Error testing connection' });
+                        reject(error);
+                        return;
+                    }
 
                     const messages = req.body.sent_To;
                     const messagesNumber = messages.length;
@@ -144,7 +176,6 @@ export async function sendSMS(req, res) {
                     }
 
                     session.on('close', () => {
-                        // removeBindCredentials(req.body.customer.id);
                         console.log("Connection closed");
                     });
                 });
