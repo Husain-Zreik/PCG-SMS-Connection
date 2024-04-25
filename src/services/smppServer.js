@@ -39,18 +39,18 @@ export default function startSMPPServer() {
 			const ipv4Part = ipv6ToIpv4(session.socket.remoteAddress);
 			let validCredentials = false;
 
-			// for (const key in bindCredentials) {
-			// 	const credential = bindCredentials[key];
-			// 	if (pdu.system_id === credential.username && pdu.password === credential.password && ipv4Part === credential.ip) {
-			// 		validCredentials = true;
-			// 		break;
-			// 	}
-			// }
-
-			if (pdu.system_id === selectedCustomerCredentials.username && pdu.password === selectedCustomerCredentials.password && ipv4Part === selectedCustomerCredentials.ip) {
-				validCredentials = true;
-				is_finished = 0;
+			for (const key in bindCredentials) {
+				const credential = bindCredentials[key];
+				if (pdu.system_id === credential.username && pdu.password === credential.password && ipv4Part === credential.ip) {
+					validCredentials = true;
+					break;
+				}
 			}
+
+			// if (pdu.system_id === selectedCustomerCredentials.username && pdu.password === selectedCustomerCredentials.password && ipv4Part === selectedCustomerCredentials.ip) {
+			// 	validCredentials = true;
+			// 	is_finished = 0;
+			// }
 
 			if (validCredentials) {
 				session.send(pdu.response());
@@ -110,19 +110,20 @@ export default function startSMPPServer() {
 			});
 
 			session.on('enquire_link', function (pdu) {
-				if (is_finished) {
-					session.unbind(() => {
-						counter = 0;
-						is_finished = 0;
-						bindCredentials = {};
-						selectedCustomerCredentials = {};
-						console.log('Session unbound from server');
-						session.close();
-						console.log('Session closed from server');
-					});
-				} else {
-					session.send(pdu.response());
-				}
+				// if (is_finished) {
+				// 	session.unbind(() => {
+				// 		counter = 0;
+				// 		is_finished = 0;
+				// 		bindCredentials = {};
+				// 		selectedCustomerCredentials = {};
+				// 		console.log('Session unbound from server');
+				// 		session.close();
+				// 		console.log('Session closed from server');
+				// 	});
+				// } else {
+				// 	session.send(pdu.response());
+				// }
+				session.send(pdu.response());
 			});
 		});
 	});
