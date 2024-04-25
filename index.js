@@ -23,7 +23,6 @@ server.listen(port, ipAddress, (err) => {
     }
     console.log(`HTTP Server running at http://${ipAddress}:${port}/`);
     startSMPPServer();
-    addBindCredentials();
 });
 
 connection.connect((err) => {

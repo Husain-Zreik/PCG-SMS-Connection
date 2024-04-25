@@ -39,9 +39,7 @@ export default function startSMPPServer() {
 			for (const key in bindCredentials) {
 				const credential = bindCredentials[key];
 				const ipv4Part = ipv6ToIpv4(session.socket.remoteAddress);
-				console.log(ipv4Part, "credentials ip :", credential.ip)
 				if (pdu.system_id === credential.username && pdu.password === credential.password && ipv4Part === credential.ip) {
-					// if (pdu.system_id === credential.username && pdu.password === credential.password) {
 					validCredentials = true;
 					break;
 				}
@@ -110,10 +108,10 @@ export default function startSMPPServer() {
 	});
 }
 
-async function fetchCustomerDataFromDB() {
+async function fetchCustomerDataFromDB(user_id) {
 	return new Promise((resolve, reject) => {
-		const query = 'SELECT id, username, password, ip, port FROM carriers WHERE type = ? AND is_deleted = ?';
-		connection.query(query, ['customer', false], (error, results) => {
+		const query = 'SELECT id, username, password, ip, port FROM carriers WHERE type = ? AND is_deleted = ? AND user_id =?';
+		connection.query(query, ['customer', false, user_id], (error, results) => {
 			if (error) {
 				reject(error);
 			} else {
@@ -130,9 +128,9 @@ async function fetchCustomerDataFromDB() {
 	});
 }
 
-export async function addBindCredentials() {
+export async function addBindCredentials(user_id) {
 	try {
-		const customerData = await fetchCustomerDataFromDB();
+		const customerData = await fetchCustomerDataFromDB(user_id);
 		customerData.forEach(customer => {
 			bindCredentials[customer.id] = {
 				username: customer.username,
