@@ -88,7 +88,7 @@ export async function sendSMS(req, res) {
                     const timeoutDuration = (req.body.delay * messagesNumber + 60) * 1000;
                     let messagesSuccess = 0;
                     let sentMessages = -1;
-                    let deliveredMessages = 0;
+                    let deliveredMessages = -1;
 
                     const timeout = setTimeout(() => {
                         console.log('Timeout reached, closing connection...');
@@ -121,7 +121,7 @@ export async function sendSMS(req, res) {
                             console.log("No received message id");
                         }
 
-                        if (deliveredMessages - 1 === sentMessages) {
+                        if (deliveredMessages === sentMessages) {
                             console.log('All deliveries received, closing connection...');
                             clearTimeout(timeout);
                             session.unbind(() => {
