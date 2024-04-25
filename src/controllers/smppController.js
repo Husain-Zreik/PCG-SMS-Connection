@@ -34,6 +34,7 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
             }
 
             session.submit_sm({
+                destination_addr: "+15555555555",
                 short_message: "test connection",
                 registered_delivery: 1,
             }, async (submitPdu) => {
