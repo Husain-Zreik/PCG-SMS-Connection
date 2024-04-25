@@ -29,9 +29,7 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
         console.log(`test : `, currentAttempt);
         setTimeout(async () => {
             if (currentAttempt > maxAttempts) {
-                // reject(new Error('Max attempts reached without establishing connection'));
                 reject('Max attempts reached without establishing connection');
-                return;
             }
 
             session.submit_sm({
@@ -47,7 +45,7 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
                     await testConnection(session, maxAttempts, currentAttempt + 1);
                 }
             });
-        }, 9000);
+        }, 6000);
     });
 }
 
@@ -62,7 +60,7 @@ export async function sendSMS(req, res) {
 
         addBindCredentials(req.body.user_id);
 
-        return await new Promise((resolve, reject) => {
+        await new Promise((resolve, reject) => {
             session.on('connect', () => {
                 session.bind_transceiver({
                     system_id: req.body.vendor.username,
@@ -89,7 +87,6 @@ export async function sendSMS(req, res) {
                     const timeout = setTimeout(() => {
                         console.log('Timeout reached, closing connection...');
                         session.unbind(() => {
-                            session.close();
                             resolve({
                                 status: 500,
                                 data: {
@@ -100,6 +97,7 @@ export async function sendSMS(req, res) {
                                     message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
                                 }
                             });
+                            console.log("after unbinddd")
                         });
                     }, timeoutDuration);
 
