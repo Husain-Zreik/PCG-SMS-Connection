@@ -35,7 +35,7 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
             }
 
             session.submit_sm({
-                destination_addr: "9617100340030",
+                destination_addr: "961710034000",
                 short_message: "test connection",
                 registered_delivery: 1,
             }, async (submitPdu) => {
@@ -62,7 +62,7 @@ export async function sendSMS(req, res) {
 
         addBindCredentials(req.body.user_id);
 
-        await new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             session.on('connect', () => {
                 session.bind_transceiver({
                     system_id: req.body.vendor.username,
@@ -70,14 +70,11 @@ export async function sendSMS(req, res) {
                 }, async (bindPdu) => {
                     if (bindPdu.command_status !== 0) {
                         console.error("Error binding to SMPP server:", bindPdu.command_status);
-                        res.status(500).json({ error: 'Error binding to SMPP server' });
                         reject('Error binding to SMPP server');
-                        return;
                     }
 
                     session.on('error', (err) => {
                         console.error("An error occurred:", err);
-                        res.status(500).json({ error: 'An error occurred' });
                         reject(err);
                     });
 
@@ -93,14 +90,16 @@ export async function sendSMS(req, res) {
                         console.log('Timeout reached, closing connection...');
                         session.unbind(() => {
                             session.close();
-                            res.status(500).json({
-                                error: 'Request time out and not all messages have been delivered',
-                                total: messagesNumber,
-                                sent: sentMessages,
-                                delivered: deliveredMessages,
-                                message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
+                            resolve({
+                                status: 500,
+                                data: {
+                                    error: 'Request time out and not all messages have been delivered',
+                                    total: messagesNumber,
+                                    sent: sentMessages,
+                                    delivered: deliveredMessages,
+                                    message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
+                                }
                             });
-                            resolve();
                         });
                     }, timeoutDuration);
 
@@ -109,7 +108,8 @@ export async function sendSMS(req, res) {
 
                         const messageId = deliverPdu.receipted_message_id;
                         const testMessage = deliverPdu.source_addr;
-                        if (messageId && testMessage != "9617100340030") {
+                        console.log(testMessage);
+                        if (messageId && testMessage != "961710034000") {
                             if (deliverPdu.command_status === 0) {
                                 updateIsDelivered(messageId);
                                 deliveredMessages++;
@@ -125,15 +125,17 @@ export async function sendSMS(req, res) {
                             console.log('All deliveries received, closing connection...');
                             clearTimeout(timeout);
                             session.unbind(() => {
-                                session.close();
-                                res.status(200).json({
-                                    total: messagesNumber,
-                                    sent: sentMessages,
-                                    delivered: deliveredMessages,
-                                    message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesNumber} messages delivered successfully.`
+                                resolve({
+                                    status: 200,
+                                    data: {
+                                        total: messagesNumber,
+                                        sent: sentMessages,
+                                        delivered: deliveredMessages,
+                                        message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesNumber} messages delivered successfully.`
+                                    }
                                 });
-                                resolve();
                             });
+                            console.log("after unbinddd")
                         }
                     });
 
@@ -168,13 +170,12 @@ export async function sendSMS(req, res) {
                         })
                             .catch(error => {
                                 console.error('Error sending SMS:', error);
-                                res.status(500).json({ error: 'Error sending SMS' });
                                 reject(error);
                             });
                     }
 
                     session.on('close', () => {
-                        console.log("Connection closed");
+                        console.log("Connection closed by server");
                         resolve();
                     });
                 });

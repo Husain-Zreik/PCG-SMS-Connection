@@ -91,14 +91,14 @@ export default function startSMPPServer() {
 				console.error('An error occurred:', err);
 			});
 
-			// session.on('unbind', function (pdu) {
-			// 	session.send(pdu.response());
-			// 	session.close();
-			// });
+			session.on('unbind', function (pdu) {
+				session.send(pdu.response());
+				session.close();
+			});
 
-			// session.on('close', () => {
-			// 	console.log('Session closed by Client');
-			// });
+			session.on('close', () => {
+				console.log('Session closed by Client');
+			});
 
 			session.on('enquire_link', function (pdu) {
 				session.send(pdu.response());
