@@ -40,53 +40,25 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
             }, async (submitPdu) => {
                 if (submitPdu.command_status === 0) {
                     console.log(`Successful Connected`);
-                    resolve(`Successful Connected`);
-                    return
+                    resolve();
+                    return;
                 } else {
                     console.error(`Error not Connected. Retrying...`);
-                    await testConnection(session, maxAttempts, currentAttempt + 1);
+                    // Retry the connection
+                    try {
+                        await testConnection(session, maxAttempts, currentAttempt + 1);
+                        // If the connection succeeds, resolve
+                        resolve();
+                    } catch (error) {
+                        // If the connection fails again, reject with the error
+                        reject(error);
+                    }
                 }
             });
         }, 4000);
-    }).then(async result => {
-        for (let i = 0; i < messagesNumber; i++) {
-            const message = messages[i];
-            await new Promise((innerResolve) => {
-                setTimeout(() => {
-                    session.submit_sm({
-                        destination_addr: message.number,
-                        short_message: message.content,
-                        registered_delivery: 1,
-                    }, (submitPdu) => {
-
-                        if (submitPdu.command_status === 0) {
-                            console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
-                            updateStatus(message.id, 'sent', submitPdu.message_id);
-                            messagesSuccess++;
-                            console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
-                            if (i === messagesNumber - 1) {
-                                sentMessages = messagesSuccess;
-                            }
-
-                        } else {
-                            console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
-                            updateStatus(message.id, 'failed', submitPdu.message_id);
-                        }
-                        innerResolve();
-                    });
-                }, req.body.delay * 1000);
-            })
-                .catch(error => {
-                    console.error('Error sending SMS:', error);
-                    reject(error);
-                });
-        }
-        console.log('test connection Resolved:', result);
-    })
-        .catch(error => {
-            console.error('test connection Rejected:', error);
-        });;
+    });
 }
+
 
 export async function sendSMS(req, res) {
 
@@ -184,38 +156,38 @@ export async function sendSMS(req, res) {
                     let hi = await testConnection(session);
                     console.log("test connection return :", hi);
 
-                    // for (let i = 0; i < messagesNumber; i++) {
-                    //     const message = messages[i];
-                    //     await new Promise((innerResolve) => {
-                    //         setTimeout(() => {
-                    //             session.submit_sm({
-                    //                 destination_addr: message.number,
-                    //                 short_message: message.content,
-                    //                 registered_delivery: 1,
-                    //             }, (submitPdu) => {
+                    for (let i = 0; i < messagesNumber; i++) {
+                        const message = messages[i];
+                        await new Promise((innerResolve) => {
+                            setTimeout(() => {
+                                session.submit_sm({
+                                    destination_addr: message.number,
+                                    short_message: message.content,
+                                    registered_delivery: 1,
+                                }, (submitPdu) => {
 
-                    //                 if (submitPdu.command_status === 0) {
-                    //                     console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
-                    //                     updateStatus(message.id, 'sent', submitPdu.message_id);
-                    //                     messagesSuccess++;
-                    //                     console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
-                    //                     if (i === messagesNumber - 1) {
-                    //                         sentMessages = messagesSuccess;
-                    //                     }
+                                    if (submitPdu.command_status === 0) {
+                                        console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
+                                        updateStatus(message.id, 'sent', submitPdu.message_id);
+                                        messagesSuccess++;
+                                        console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
+                                        if (i === messagesNumber - 1) {
+                                            sentMessages = messagesSuccess;
+                                        }
 
-                    //                 } else {
-                    //                     console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
-                    //                     updateStatus(message.id, 'failed', submitPdu.message_id);
-                    //                 }
-                    //                 innerResolve();
-                    //             });
-                    //         }, req.body.delay * 1000);
-                    //     })
-                    //         .catch(error => {
-                    //             console.error('Error sending SMS:', error);
-                    //             reject(error);
-                    //         });
-                    // }
+                                    } else {
+                                        console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
+                                        updateStatus(message.id, 'failed', submitPdu.message_id);
+                                    }
+                                    innerResolve();
+                                });
+                            }, req.body.delay * 1000);
+                        })
+                            .catch(error => {
+                                console.error('Error sending SMS:', error);
+                                reject(error);
+                            });
+                    }
 
                     session.on('close', () => {
                         console.log("Connection closed by server");
