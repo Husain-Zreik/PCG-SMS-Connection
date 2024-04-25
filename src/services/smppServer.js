@@ -46,6 +46,7 @@ export default function startSMPPServer() {
 			// }
 
 			session.send(pdu.response());
+			session.resume();
 			// if (validCredentials) {
 			// 	session.send(pdu.response());
 			// 	session.resume();
