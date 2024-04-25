@@ -115,7 +115,14 @@ async function fetchCustomerDataFromDB() {
 			if (error) {
 				reject(error);
 			} else {
-				resolve(results);
+				const customers = results.map(customer => ({
+					id: customer.id,
+					username: customer.username,
+					password: Buffer.from(customer.password, 'base64').toString('utf-8'),
+					ip: customer.ip,
+					port: customer.port
+				}));
+				resolve(customers);
 			}
 		});
 	});
