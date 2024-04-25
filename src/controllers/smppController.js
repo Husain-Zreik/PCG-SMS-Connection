@@ -44,13 +44,10 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
                     return;
                 } else {
                     console.error(`Error not Connected. Retrying...`);
-                    // Retry the connection
                     try {
                         await testConnection(session, maxAttempts, currentAttempt + 1);
-                        // If the connection succeeds, resolve
                         resolve();
                     } catch (error) {
-                        // If the connection fails again, reject with the error
                         reject(error);
                     }
                 }
@@ -59,13 +56,12 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
     });
 }
 
-
 export async function sendSMS(req, res) {
 
     try {
         const session = smpp.connect({
             url: `smpp://${req.body.vendor.ip}:${req.body.vendor.port}`,
-            auto_enquire_link_period: 30000,
+            auto_enquire_link_period: 10000,
             debug: true
         });
 
@@ -136,20 +132,19 @@ export async function sendSMS(req, res) {
                         if (deliveredMessages === sentMessages) {
                             console.log('All deliveries received, closing connection...');
                             clearTimeout(timeout);
-                            session.unbind(() => {
-                                resolve({
-                                    status: 200,
-                                    data: {
-                                        total: messagesNumber,
-                                        sent: sentMessages,
-                                        delivered: deliveredMessages,
-                                        message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesNumber} messages delivered successfully.`
-                                    }
-                                });
-                            });
+                            session.unbind();
                             console.log("after unbinddd successfully")
                             finished();
                             session.close();
+                            resolve({
+                                status: 200,
+                                data: {
+                                    total: messagesNumber,
+                                    sent: sentMessages,
+                                    delivered: deliveredMessages,
+                                    message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesNumber} messages delivered successfully.`
+                                }
+                            });
                         }
                     });
 
