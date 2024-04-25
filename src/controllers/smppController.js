@@ -106,7 +106,7 @@ export async function sendSMS(req, res) {
 
                         const messageId = deliverPdu.receipted_message_id;
                         const testMessage = deliverPdu.source_addr;
-                        console.log(testMessage);
+
                         if (messageId && testMessage != "961710034000") {
                             if (deliverPdu.command_status === 0) {
                                 updateIsDelivered(messageId);
@@ -178,7 +178,14 @@ export async function sendSMS(req, res) {
                     });
                 });
             });
-        });
+        }).then(result => {
+            console.log('Resolved:', result);
+            res.status(200).json(result);
+        })
+            .catch(error => {
+                console.error('Rejected:', error);
+                res.status(500).json({ error: 'An error occurred' });
+            });
     } catch (error) {
         console.error("An error occurred:", error);
         res.status(500).json({ error: 'An error occurred' });
