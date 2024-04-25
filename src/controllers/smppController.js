@@ -124,34 +124,21 @@ export async function sendSMS(req, res) {
                         if (deliveredMessages - 1 === sentMessages) {
                             console.log('All deliveries received, closing connection...');
                             clearTimeout(timeout);
-
-                            session.unbind((unbindPdu) => {
-                                session.send(unbindPdu.response());
-                            });
-
-                            // Close the session when the unbind is acknowledged
-                            session.on('unbind_resp', () => {
+                            console.log('test 1');
+                            session.unbind(() => {
+                                console.log('test 2');
                                 console.log("Finish closing");
                                 session.close();
+                                console.log('test 3');
                                 res.status(200).json({
                                     total: messagesNumber,
                                     sent: sentMessages,
-                                    delivered: deliveredMessages,
-                                    message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesNumber} messages delivered successfully.`
+                                    delivered: deliveredMessages - 1,
+                                    message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages - 1} out of ${messagesNumber} messages delivered successfully.`
                                 });
+                                console.log('test 4');
+                                resolve();
                             });
-
-                            // session.unbind(() => {
-                            //     console.log("Finish closing");
-                            //     session.close();
-                            //     res.status(200).json({
-                            //         total: messagesNumber,
-                            //         sent: sentMessages,
-                            //         delivered: deliveredMessages - 1,
-                            //         message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages - 1} out of ${messagesNumber} messages delivered successfully.`
-                            //     });
-                            //     resolve();
-                            // });
                         }
                     });
 
