@@ -5,6 +5,7 @@ const { format } = fecha;
 const { createServer } = smpp;
 
 let counter = 0;
+let is_finished = 0;
 let bindCredentials = {};
 let selectedCustomerCredentials = {};
 
@@ -48,6 +49,7 @@ export default function startSMPPServer() {
 
 			if (pdu.system_id === selectedCustomerCredentials.username && pdu.password === selectedCustomerCredentials.password && ipv4Part === selectedCustomerCredentials.ip) {
 				validCredentials = true;
+				is_finished = 0;
 			}
 
 			if (validCredentials) {
@@ -106,6 +108,11 @@ export default function startSMPPServer() {
 			});
 
 			session.on('enquire_link', function (pdu) {
+				if (is_finished) {
+					session.unbind(() => {
+						console.log('Session unbound from client');
+					});
+				}
 				session.send(pdu.response());
 			});
 		});
@@ -166,4 +173,8 @@ export async function selectCustomerCredentials(customerId) {
 	} catch (error) {
 		console.error('Error selecting customer credentials:', error);
 	}
+}
+
+export function finished() {
+	is_finished = 1
 }

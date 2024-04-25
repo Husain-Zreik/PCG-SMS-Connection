@@ -1,6 +1,6 @@
 import smpp from 'smpp';
 import connection from '../../config/dbConnection.js';
-import { addBindCredentials, selectCustomerCredentials } from '../services/smppServer.js';
+import { addBindCredentials, finished, selectCustomerCredentials } from '../services/smppServer.js';
 
 function updateStatus(sentToId, status, serverMessageId) {
     const updateQuery = `UPDATE sent_to SET status = ?, server_message_id = ? WHERE id = ?`;
@@ -98,7 +98,9 @@ export async function sendSMS(req, res) {
                                     message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
                                 }
                             });
-                            console.log("after unbinddd")
+                            console.log("after unbinddd not good")
+                            finished();
+                            session.close();
                         });
                     }, timeoutDuration);
 
@@ -134,8 +136,9 @@ export async function sendSMS(req, res) {
                                     }
                                 });
                             });
+                            console.log("after unbinddd successfully")
+                            finished();
                             session.close();
-                            console.log("after unbinddd")
                         }
                     });
 
