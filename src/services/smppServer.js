@@ -85,7 +85,6 @@ export default function startSMPPServer() {
 						message: deliveryReceiptMessage,
 					},
 				});
-
 			});
 
 			session.on('error', function (err) {
@@ -145,16 +144,3 @@ export async function addBindCredentials(user_id) {
 		console.error('Error adding customer credentials:', error);
 	}
 }
-
-// export function addBindCredentials(key, credential) {
-// 	bindCredentials[key] = { ...credential };
-// }
-
-// export function removeBindCredentials(key) {
-// 	if (bindCredentials[key]) {
-// 		delete bindCredentials[key];
-// 		console.log(`Credentials for customer ${key} removed.`);
-// 	} else {
-// 		console.log(`No credentials found for customer ${key}.`);
-// 	}
-// }
