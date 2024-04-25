@@ -45,8 +45,15 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
                     await testConnection(session, maxAttempts, currentAttempt + 1);
                 }
             });
-        }, 6000);
-    });
+        }, 4000);
+    }).then(result => {
+        console.log('test connection Resolved:', result);
+        res.status(200).json(result);
+    })
+        .catch(error => {
+            console.error('test connection Rejected:', error);
+            res.status(500).json({ error: 'An error occurred' });
+        });;
 }
 
 export async function sendSMS(req, res) {
