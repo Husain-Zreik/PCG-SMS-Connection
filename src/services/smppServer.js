@@ -67,31 +67,33 @@ export default function startSMPPServer() {
 				const currentTime = format(new Date(), 'YYMMDDHHmm');
 
 				session.send(pdu.response({ message_id: messageID }));
+				if (messageContent != "test connection") {
 
-				const deliveryReceiptMessage = `id:${messageID} sub:001 dlvrd:001 submit date:${currentTime} done date:${currentTime} stat:DELIVRD err:000 text: ${messageContent}`;
+					const deliveryReceiptMessage = `id:${messageID} sub:001 dlvrd:001 submit date:${currentTime} done date:${currentTime} stat:DELIVRD err:000 text: ${messageContent}`;
 
-				session.deliver_sm({
-					service_type: '',
-					source_addr_ton: 0,
-					source_addr: destinationAddr,
-					dest_addr_ton: 0,
-					dest_addr_npi: 0,
-					destination_addr: '',
-					esm_class: 4,
-					protocol_id: 0,
-					priority_flag: 0,
-					schedule_delivery_time: '',
-					validity_period: '',
-					registered_delivery: 0,
-					replace_if_present_flag: 0,
-					data_coding: 0,
-					sm_default_msg_id: 0,
-					message_state: 2,
-					receipted_message_id: messageID,
-					short_message: {
-						message: deliveryReceiptMessage,
-					},
-				});
+					session.deliver_sm({
+						service_type: '',
+						source_addr_ton: 0,
+						source_addr: destinationAddr,
+						dest_addr_ton: 0,
+						dest_addr_npi: 0,
+						destination_addr: '',
+						esm_class: 4,
+						protocol_id: 0,
+						priority_flag: 0,
+						schedule_delivery_time: '',
+						validity_period: '',
+						registered_delivery: 0,
+						replace_if_present_flag: 0,
+						data_coding: 0,
+						sm_default_msg_id: 0,
+						message_state: 2,
+						receipted_message_id: messageID,
+						short_message: {
+							message: deliveryReceiptMessage,
+						},
+					});
+				}
 			});
 
 			session.on('error', function (err) {
