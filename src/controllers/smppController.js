@@ -98,8 +98,8 @@ export async function sendSMS(req, res) {
                                 error: 'Request time out and not all messages have been delivered',
                                 total: messagesNumber,
                                 sent: sentMessages,
-                                delivered: deliveredMessages - 1,
-                                message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages - 1} out of ${messagesSuccess} messages delivered successfully.`
+                                delivered: deliveredMessages,
+                                message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
                             });
                             resolve();
                         });
@@ -109,11 +109,12 @@ export async function sendSMS(req, res) {
                         session.send(deliverPdu.response());
 
                         const messageId = deliverPdu.receipted_message_id;
-                        if (messageId) {
+                        const testMessage = deliverPdu.source_addr;
+                        if (messageId && testMessage != "9617100340030") {
                             if (deliverPdu.command_status === 0) {
                                 updateIsDelivered(messageId);
                                 deliveredMessages++;
-                                console.log(`${deliveredMessages - 1} out of ${messagesSuccess} messages delivered successfully`);
+                                console.log(`${deliveredMessages} out of ${messagesSuccess} messages delivered successfully`);
                             } else {
                                 console.error(`Error delivering message with ID ${messageId}:`, deliverPdu.command_status);
                             }
@@ -121,18 +122,24 @@ export async function sendSMS(req, res) {
                             console.log("No received message id");
                         }
 
-                        if (deliveredMessages - 1 === sentMessages) {
+                        if (deliveredMessages === sentMessages) {
                             console.log('All deliveries received, closing connection...');
                             clearTimeout(timeout);
+                            res.status(200).json({
+                                total: messagesNumber,
+                                sent: sentMessages,
+                                delivered: deliveredMessages,
+                                message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesNumber} messages delivered successfully.`
+                            });
                             session.unbind(() => {
                                 console.log("Finish closing");
                                 session.close();
-                                res.status(200).json({
-                                    total: messagesNumber,
-                                    sent: sentMessages,
-                                    delivered: deliveredMessages - 1,
-                                    message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages - 1} out of ${messagesNumber} messages delivered successfully.`
-                                });
+                                // res.status(200).json({
+                                //     total: messagesNumber,
+                                //     sent: sentMessages,
+                                //     delivered: deliveredMessages,
+                                //     message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesNumber} messages delivered successfully.`
+                                // });
                                 resolve();
                             });
                         }
