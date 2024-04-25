@@ -82,6 +82,8 @@ export async function sendSMS(req, res) {
                         reject(err);
                     });
 
+                    await testConnection(session);
+
                     const messages = req.body.sent_To;
                     const messagesNumber = messages.length;
                     const timeoutDuration = (req.body.delay * messagesNumber + 60) * 1000;
@@ -136,7 +138,6 @@ export async function sendSMS(req, res) {
                         }
                     });
 
-                    await testConnection(session);
 
                     for (let i = 0; i < messagesNumber; i++) {
                         const message = messages[i];
