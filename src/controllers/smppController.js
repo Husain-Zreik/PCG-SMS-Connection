@@ -44,7 +44,7 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
                     return
                 } else {
                     console.error(`Error not Connected. Retrying...`);
-                    await testConnection(session, maxAttempts, currentAttempt + 1);
+                    return testConnection(session, maxAttempts, currentAttempt + 1);
                 }
             });
         }, 4000);
