@@ -96,6 +96,10 @@ export default function startSMPPServer() {
 				session.close();
 			});
 
+			session.on('close', () => {
+				console.log('Session closed by Client');
+			});
+
 			session.on('enquire_link', function (pdu) {
 				session.send(pdu.response());
 			});
