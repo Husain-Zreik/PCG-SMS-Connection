@@ -82,7 +82,6 @@ export async function sendSMS(req, res) {
                         reject(err);
                     });
 
-                    await testConnection(session);
 
                     const messages = req.body.sent_To;
                     const messagesNumber = messages.length;
@@ -122,7 +121,7 @@ export async function sendSMS(req, res) {
                             console.log("No received message id");
                         }
 
-                        if (deliveredMessages === sentMessages) {
+                        if (deliveredMessages - 1 === sentMessages) {
                             console.log('All deliveries received, closing connection...');
                             clearTimeout(timeout);
                             session.unbind(() => {
@@ -138,6 +137,7 @@ export async function sendSMS(req, res) {
                         }
                     });
 
+                    await testConnection(session);
 
                     for (let i = 0; i < messagesNumber; i++) {
                         const message = messages[i];
