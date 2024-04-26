@@ -196,13 +196,20 @@ export async function selectCustomerCredentials(customerId) {
 }
 
 export async function closeAllSessions(userId) {
-
-	activeSessionsGroups[userId].forEach(session => {
-		session.unbind(() => {
-			session.close();
-		});
-	});
-	console.log("Removed Active Sessions");
+	try {
+		if (activeSessionsGroups[userId]) {
+			activeSessionsGroups[userId].forEach(session => {
+				session.unbind(() => {
+					session.close();
+				});
+			});
+			console.log("Removed Active Sessions");
+		} else {
+			console.log("No active sessions found for the user:", userId);
+		}
+	} catch (error) {
+		console.error("An error occurred while closing sessions:", error);
+	}
 }
 
 // export async function closeAllSessions() {
