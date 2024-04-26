@@ -100,7 +100,7 @@ export async function sendSMS(req, res) {
 
                     const messages = req.body.sent_To;
                     const messagesNumber = messages.length;
-                    const timeoutDuration = (req.body.delay * messagesNumber + 60) * 1000;
+                    const timeoutDuration = (req.body.delay * messagesNumber + 10) * 1000;
                     let messagesSuccess = 0;
                     let sentMessages = -1;
                     let deliveredMessages = 0;
@@ -110,7 +110,7 @@ export async function sendSMS(req, res) {
                         // session.unbind();
                         // console.log("after unbinddd not good    ")
                         // session.close();
-                        resolve({
+                        reject({
                             status: 500,
                             data: {
                                 error: 'Request time out and not all messages have been delivered',
