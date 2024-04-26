@@ -25,37 +25,36 @@ function updateIsDelivered(receiptedMessageId) {
 }
 
 async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
-    try {
+    return new Promise((resolve, reject) => {
         console.log(`test : `, currentAttempt);
-        const submitPdu = await new Promise((resolve, reject) => {
-            setTimeout(() => {
-                if (currentAttempt > maxAttempts) {
-                    reject('Max attempts reached without establishing connection');
+        setTimeout(async () => {
+            if (currentAttempt > maxAttempts) {
+                reject('Max attempts reached without establishing connection');
+                return;
+            }
+
+            session.submit_sm({
+                destination_addr: "961710034000",
+                short_message: "test connection",
+                registered_delivery: 1,
+            }, async (submitPdu) => {
+                if (submitPdu.command_status === 0) {
+                    console.log(`Successful Connected`);
+                    resolve();
                     return;
+                } else {
+                    console.error(`Error not Connected. Retrying...`);
+                    try {
+                        await testConnection(session, maxAttempts, currentAttempt + 1);
+                        resolve();
+                    } catch (error) {
+                        reject(error);
+                    }
                 }
-
-                session.submit_sm({
-                    destination_addr: "961710034000",
-                    short_message: "test connection",
-                    registered_delivery: 1,
-                }, (submitPdu) => {
-                    resolve(submitPdu);
-                });
-            }, 2000);
-        });
-
-        if (submitPdu.command_status === 0) {
-            console.log(`Successful Connected`);
-        } else {
-            console.error(`Error not Connected. Retrying...`);
-            await testConnection(session, maxAttempts, currentAttempt + 1);
-        }
-    } catch (error) {
-        console.error('Error in testConnection:', error);
-        throw error;
-    }
+            });
+        }, 2000);
+    });
 }
-
 
 export async function updateCustomers(req, res) {
     try {
@@ -160,7 +159,19 @@ export async function sendSMS(req, res) {
                         }
                     });
 
-                    await testConnection(session);
+                    await testConnection(session).catch(error => {
+                        console.error("Failed to establish connection:", error);
+                        resolve({
+                            status: 500,
+                            data: {
+                                error: error,
+                                total: messagesNumber,
+                                sent: sentMessages,
+                                delivered: deliveredMessages,
+                                message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
+                            }
+                        });
+                    });
 
                     for (let i = 0; i < messagesNumber; i++) {
                         const message = messages[i];
