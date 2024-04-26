@@ -71,7 +71,7 @@ export async function updateCustomers(req, res) {
 }
 
 export async function sendSMS(req, res) {
-    console.log(req.body);
+
     try {
         const session = smpp.connect({
             url: `smpp://${req.body.vendor.ip}:${req.body.vendor.port}`,
@@ -91,7 +91,7 @@ export async function sendSMS(req, res) {
                         console.error("Error binding to SMPP server:", bindPdu.command_status);
                         return reject({
                             code: 500,
-                            message: 'Error binding to SMPP server',
+                            message: 'Error binding to SMPP server(vendor) check the credentials',
                         });
                     }
 
@@ -174,6 +174,8 @@ export async function sendSMS(req, res) {
                                 session.submit_sm({
                                     destination_addr: message.number,
                                     short_message: message.content,
+                                    source_addr: message.source,
+                                    //add the source (instagram)
                                     registered_delivery: 1,
                                 }, (submitPdu) => {
 
