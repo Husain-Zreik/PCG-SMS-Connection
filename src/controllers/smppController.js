@@ -110,12 +110,12 @@ export async function sendSMS(req, res) {
                         // session.unbind();
                         // console.log("after unbinddd not good    ")
                         // session.close();
-                        reject({
+                        return resolve({
                             status: 500,
                             data: {
                                 error: 'Request time out and not all messages have been delivered',
                                 total: messagesNumber,
-                                sent: sentMessages,
+                                sent: sentMessages + 1,
                                 delivered: deliveredMessages,
                                 message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
                             }
