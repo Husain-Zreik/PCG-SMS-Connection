@@ -71,7 +71,7 @@ export async function updateCustomers(req, res) {
 }
 
 export async function sendSMS(req, res) {
-
+    console.log(req.body);
     try {
         const session = smpp.connect({
             url: `smpp://${req.body.vendor.ip}:${req.body.vendor.port}`,
