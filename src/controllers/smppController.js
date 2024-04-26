@@ -100,23 +100,20 @@ export async function sendSMS(req, res) {
 
                     const messages = req.body.sent_To;
                     const messagesNumber = messages.length;
-                    const timeoutDuration = (req.body.delay * messagesNumber + 10) * 1000;
+                    const timeoutDuration = (req.body.delay * messagesNumber + 20) * 1000;
                     let messagesSuccess = 0;
                     let sentMessages = -1;
                     let deliveredMessages = 0;
 
                     const timeout = setTimeout(() => {
                         console.log('Timeout reached, closing connection...');
-                        // session.unbind();
-                        // console.log("after unbinddd not good    ")
-                        // session.close();
                         return resolve({
                             code: 500,
-                            error: 'Request time out and not all messages have been delivered',
+                            message: 'Request time out and not all messages have been delivered',
                             total: messagesNumber,
                             sent: sentMessages + 1,
                             delivered: deliveredMessages,
-                            message: `${sentMessages + 1} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
+                            info_message: `${sentMessages + 1} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
 
                         });
 
@@ -143,9 +140,6 @@ export async function sendSMS(req, res) {
                         if (deliveredMessages === sentMessages) {
                             console.log('All deliveries received, closing connection...');
                             clearTimeout(timeout);
-                            // session.unbind();
-                            // console.log("after unbinddd successfully")
-                            // session.close();
                             resolve({
                                 code: 200,
                                 total: messagesNumber,
@@ -157,15 +151,15 @@ export async function sendSMS(req, res) {
                         }
                     });
 
-                    // try {
-                    //     await testConnection(session);
-                    // } catch (error) {
-                    //     console.error("Failed to establish connection:", error);
-                    //     return resolve({
-                    //         code: 500,
-                    //             error: error
-                    //     });
-                    // }                 
+                    try {
+                        await testConnection(session);
+                    } catch (error) {
+                        console.error("Failed to establish connection:", error);
+                        return resolve({
+                            code: 500,
+                            message: error
+                        });
+                    }
 
                     for (let i = 0; i < messagesNumber; i++) {
                         const message = messages[i];
