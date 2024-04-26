@@ -112,13 +112,12 @@ export async function sendSMS(req, res) {
                         // session.close();
                         return resolve({
                             status: 500,
-                            data: {
-                                error: 'Request time out and not all messages have been delivered',
-                                total: messagesNumber,
-                                sent: sentMessages + 1,
-                                delivered: deliveredMessages,
-                                message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
-                            }
+                            error: 'Request time out and not all messages have been delivered',
+                            total: messagesNumber,
+                            sent: sentMessages + 1,
+                            delivered: deliveredMessages,
+                            message: `${sentMessages + 1} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
+
                         });
 
                     }, timeoutDuration);
@@ -149,12 +148,11 @@ export async function sendSMS(req, res) {
                             // session.close();
                             resolve({
                                 status: 200,
-                                data: {
-                                    total: messagesNumber,
-                                    sent: sentMessages,
-                                    delivered: deliveredMessages,
-                                    message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesNumber} messages delivered successfully.`
-                                }
+                                total: messagesNumber,
+                                sent: sentMessages,
+                                delivered: deliveredMessages,
+                                message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesNumber} messages delivered successfully.`
+
                             });
                         }
                     });
@@ -165,9 +163,7 @@ export async function sendSMS(req, res) {
                     //     console.error("Failed to establish connection:", error);
                     //     return resolve({
                     //         status: 500,
-                    //         data: {
                     //             error: error
-                    //         }
                     //     });
                     // }                 
 
