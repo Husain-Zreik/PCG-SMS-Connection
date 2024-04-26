@@ -5,7 +5,6 @@ const { format } = fecha;
 const { createServer } = smpp;
 
 let counter = 0;
-let unbind = 0;
 let is_finished = 0;
 let bindCredentials = {};
 const activeSessions = [];
@@ -36,10 +35,10 @@ export default function startSMPPServer() {
 
 		activeSessions.push(session);
 
-
 		session.on('bind_transceiver', function (pdu) {
 			session.pause();
 			console.log("Received bind_transceiver request:", pdu);
+			console.log("server sessions :", server.sessions);
 
 			const ipv4Part = ipv6ToIpv4(session.socket.remoteAddress);
 			let validCredentials = false;
@@ -117,18 +116,6 @@ export default function startSMPPServer() {
 
 			session.on('enquire_link', function (pdu) {
 				session.send(pdu.response());
-
-				// if (unbind) {
-				// 	session.unbind(() => {
-				// 		counter = 0;
-				// 		unbind = 0;
-				// 		bindCredentials = {};
-				// 		selectedCustomerCredentials = {};
-				// 		console.log('Session unbound from server');
-				// 		session.close();
-				// 		console.log('Session closed from server');
-				// 	});
-				// }
 			});
 		});
 	});
@@ -194,21 +181,12 @@ export function finished() {
 	is_finished = 1
 }
 
-export function unbindCustomers() {
-	unbind = 1
-}
-
 export async function closeAllSessions() {
-	console.log("Active Sessions:");
-	console.log(activeSessions); // Log the array of session objects
 
 	activeSessions.forEach(session => {
-		console.log("Removing session:", session); // Log each session object
 		session.unbind(() => {
 			session.close();
 		});
 	});
-
-	console.log("Active Sessions after closing:");
-	console.log(activeSessions); // Log the array of session objects after closing
+	console.log("Removed Active Sessions");
 }

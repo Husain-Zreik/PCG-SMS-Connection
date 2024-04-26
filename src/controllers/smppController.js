@@ -1,6 +1,6 @@
 import smpp from 'smpp';
 import connection from '../../config/dbConnection.js';
-import { addBindCredentials, closeAllSessions, finished, selectCustomerCredentials, unbindCustomers } from '../services/smppServer.js';
+import { addBindCredentials, closeAllSessions, finished, selectCustomerCredentials } from '../services/smppServer.js';
 
 function updateStatus(sentToId, status, serverMessageId) {
     const updateQuery = `UPDATE sent_to SET status = ?, server_message_id = ? WHERE id = ?`;
@@ -59,7 +59,6 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
 export async function updateCustomers(req, res) {
     try {
         console.log("update customers")
-        // unbindCustomers();
         await closeAllSessions();
 
         await addBindCredentials(req.body.user_id);
