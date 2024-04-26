@@ -6,8 +6,9 @@ const { createServer } = smpp;
 
 let counter = 0;
 let bindCredentials = {};
-const activeSessions = [];
-let selectedCustomerCredentials = {};
+// const activeSessions = [];
+const activeSessionsGroups = {};
+let selectedCustomerCredentials;
 
 function generateMessageID() {
 	const timestamp = new Date().toISOString().replace(/\D/g, '').slice(0, -3);
@@ -25,6 +26,18 @@ function ipv6ToIpv4(ipv6Address) {
 	}
 }
 
+function findKeyBySession(session) {
+	for (const key in activeSessionsGroups) {
+		if (activeSessionsGroups.hasOwnProperty(key)) {
+			const sessionsArray = activeSessionsGroups[key];
+			if (sessionsArray.includes(session)) {
+				return key;
+			}
+		}
+	}
+	return null;
+}
+
 export default function startSMPPServer() {
 
 	var server = createServer({
@@ -32,8 +45,7 @@ export default function startSMPPServer() {
 		rejectUnauthorized: false,
 	}, function (session) {
 
-		console.log(session);
-		activeSessions.push(session);
+		// activeSessions.push(session);
 
 		session.on('bind_transceiver', function (pdu) {
 			session.pause();
@@ -44,7 +56,12 @@ export default function startSMPPServer() {
 
 			for (const key in bindCredentials) {
 				const credential = bindCredentials[key];
+
 				if (pdu.system_id === credential.username && pdu.password === credential.password && ipv4Part === credential.ip) {
+					if (!activeSessionsGroups.hasOwnProperty(credential.user_id)) {
+						activeSessionsGroups[credential.user_id] = [];
+					}
+					activeSessionsGroups[credential.user_id].push(session);
 					validCredentials = true;
 					break;
 				}
@@ -104,8 +121,13 @@ export default function startSMPPServer() {
 			});
 
 			session.on('close', () => {
+				// activeSessions.splice(activeSessions.indexOf(session), 1);
 				console.log('Session closed by Client');
-				activeSessions.splice(activeSessions.indexOf(session), 1);
+				const key = findKeyBySession(session);
+				const index = activeSessionsGroups[key].indexOf(session);
+				if (index !== -1) {
+					activeSessionsGroups[key].splice(index, 1);
+				}
 			});
 
 			session.on('enquire_link', function (pdu) {
@@ -119,14 +141,15 @@ export default function startSMPPServer() {
 	});
 }
 
-async function fetchCustomerDataFromDB(user_id) {
+async function fetchCustomerDataFromDB(userId) {
 	return new Promise((resolve, reject) => {
 		const query = 'SELECT id, username, password, ip, port FROM carriers WHERE type = ? AND is_deleted = ? AND user_id =?';
-		connection.query(query, ['customer', false, user_id], (error, results) => {
+		connection.query(query, ['customer', false, userId], (error, results) => {
 			if (error) {
 				reject(error);
 			} else {
 				const customers = results.map(customer => ({
+					user_id: userId,
 					id: customer.id,
 					username: customer.username,
 					password: Buffer.from(customer.password, 'base64').toString('utf-8'),
@@ -139,11 +162,12 @@ async function fetchCustomerDataFromDB(user_id) {
 	});
 }
 
-export async function addBindCredentials(user_id) {
+export async function addBindCredentials(userId) {
 	try {
-		const customerData = await fetchCustomerDataFromDB(user_id);
+		const customerData = await fetchCustomerDataFromDB(userId);
 		customerData.forEach(customer => {
 			bindCredentials[customer.id] = {
+				user_id: userId,
 				username: customer.username,
 				password: customer.password,
 				ip: customer.ip,
@@ -171,12 +195,22 @@ export async function selectCustomerCredentials(customerId) {
 	}
 }
 
-export async function closeAllSessions() {
+export async function closeAllSessions(userId) {
 
-	activeSessions.forEach(session => {
+	activeSessionsGroups[userId].forEach(session => {
 		session.unbind(() => {
 			session.close();
 		});
 	});
 	console.log("Removed Active Sessions");
 }
+
+// export async function closeAllSessions() {
+
+// 	activeSessions.forEach(session => {
+// 		session.unbind(() => {
+// 			session.close();
+// 		});
+// 	});
+// 	console.log("Removed Active Sessions");
+// }

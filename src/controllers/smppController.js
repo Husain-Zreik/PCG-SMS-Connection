@@ -59,7 +59,7 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
 export async function updateCustomers(req, res) {
     try {
         console.log("update customers")
-        await closeAllSessions();
+        await closeAllSessions(req.body.user_id);
 
         await addBindCredentials(req.body.user_id);
 
