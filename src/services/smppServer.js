@@ -32,6 +32,7 @@ export default function startSMPPServer() {
 		rejectUnauthorized: false,
 	}, function (session) {
 
+		console.log(session);
 		activeSessions.push(session);
 
 		session.on('bind_transceiver', function (pdu) {
