@@ -198,13 +198,17 @@ export function unbindCustomers() {
 	unbind = 1
 }
 
-export function closeAllSessions() {
-	console.log(activeSessions);
+export async function closeAllSessions() {
+	console.log("Active Sessions:");
+	console.log(activeSessions); // Log the array of session objects
+
 	activeSessions.forEach(session => {
-		console.log("remove session");
+		console.log("Removing session:", session); // Log each session object
 		session.unbind(() => {
 			session.close();
 		});
 	});
-	console.log(activeSessions);
+
+	console.log("Active Sessions after closing:");
+	console.log(activeSessions); // Log the array of session objects after closing
 }

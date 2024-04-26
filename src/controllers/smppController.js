@@ -60,7 +60,7 @@ export async function updateCustomers(req, res) {
     try {
         console.log("update customers")
         // unbindCustomers();
-        closeAllSessions();
+        await closeAllSessions();
 
         await addBindCredentials(req.body.user_id);
 
