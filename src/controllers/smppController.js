@@ -111,7 +111,7 @@ export async function sendSMS(req, res) {
                         // console.log("after unbinddd not good    ")
                         // session.close();
                         return resolve({
-                            status: 500,
+                            code: 500,
                             error: 'Request time out and not all messages have been delivered',
                             total: messagesNumber,
                             sent: sentMessages + 1,
@@ -147,7 +147,7 @@ export async function sendSMS(req, res) {
                             // console.log("after unbinddd successfully")
                             // session.close();
                             resolve({
-                                status: 200,
+                                code: 200,
                                 total: messagesNumber,
                                 sent: sentMessages,
                                 delivered: deliveredMessages,
@@ -162,7 +162,7 @@ export async function sendSMS(req, res) {
                     // } catch (error) {
                     //     console.error("Failed to establish connection:", error);
                     //     return resolve({
-                    //         status: 500,
+                    //         code: 500,
                     //             error: error
                     //     });
                     // }                 
