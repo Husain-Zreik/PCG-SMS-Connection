@@ -89,7 +89,7 @@ export async function sendSMS(req, res) {
                 }, async (bindPdu) => {
                     if (bindPdu.command_status !== 0) {
                         console.error("Error binding to SMPP server:", bindPdu.command_status);
-                        return reject({
+                        return resolve({
                             code: 500,
                             message: 'Error binding to SMPP server',
                         });
@@ -97,7 +97,7 @@ export async function sendSMS(req, res) {
 
                     session.on('error', (err) => {
                         console.error("An error occurred:", err);
-                        return reject({
+                        return resolve({
                             code: 500,
                             message: err,
                         });
@@ -196,7 +196,7 @@ export async function sendSMS(req, res) {
                         })
                             .catch(error => {
                                 console.error('Error sending SMS:', error);
-                                return reject({
+                                return resolve({
                                     code: 500,
                                     message: error,
                                 });
