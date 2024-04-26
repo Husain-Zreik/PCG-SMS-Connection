@@ -8,6 +8,7 @@ let counter = 0;
 let unbind = 0;
 let is_finished = 0;
 let bindCredentials = {};
+const activeSessions = [];
 let selectedCustomerCredentials = {};
 
 function generateMessageID() {
@@ -32,6 +33,9 @@ export default function startSMPPServer() {
 		debug: true,
 		rejectUnauthorized: false,
 	}, function (session) {
+
+		activeSessions.push(session);
+
 
 		session.on('bind_transceiver', function (pdu) {
 			session.pause();
@@ -108,22 +112,23 @@ export default function startSMPPServer() {
 
 			session.on('close', () => {
 				console.log('Session closed by Client');
+				activeSessions.splice(activeSessions.indexOf(session), 1);
 			});
 
 			session.on('enquire_link', function (pdu) {
 				session.send(pdu.response());
 
-				if (unbind) {
-					session.unbind(() => {
-						counter = 0;
-						unbind = 0;
-						bindCredentials = {};
-						selectedCustomerCredentials = {};
-						console.log('Session unbound from server');
-						session.close();
-						console.log('Session closed from server');
-					});
-				}
+				// if (unbind) {
+				// 	session.unbind(() => {
+				// 		counter = 0;
+				// 		unbind = 0;
+				// 		bindCredentials = {};
+				// 		selectedCustomerCredentials = {};
+				// 		console.log('Session unbound from server');
+				// 		session.close();
+				// 		console.log('Session closed from server');
+				// 	});
+				// }
 			});
 		});
 	});
@@ -191,4 +196,15 @@ export function finished() {
 
 export function unbindCustomers() {
 	unbind = 1
+}
+
+export function closeAllSessions() {
+	console.log(activeSessions);
+	activeSessions.forEach(session => {
+		console.log("remove session");
+		session.unbind(() => {
+			session.close();
+		});
+	});
+	console.log(activeSessions);
 }
