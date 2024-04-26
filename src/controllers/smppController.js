@@ -52,7 +52,7 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
                     }
                 }
             });
-        }, 4000);
+        }, 2000);
     });
 }
 
@@ -79,8 +79,7 @@ export async function sendSMS(req, res) {
             debug: true
         });
 
-        await addBindCredentials(req.body.user_id);
-        await selectCustomerCredentials(req.body.customer.id);
+        // await selectCustomerCredentials(req.body.customer.id);
 
         await new Promise((resolve, reject) => {
             session.on('connect', () => {
@@ -108,9 +107,9 @@ export async function sendSMS(req, res) {
 
                     const timeout = setTimeout(() => {
                         console.log('Timeout reached, closing connection...');
-                        session.unbind();
-                        console.log("after unbinddd not good    ")
-                        session.close();
+                        // session.unbind();
+                        // console.log("after unbinddd not good    ")
+                        // session.close();
                         resolve({
                             status: 500,
                             data: {
@@ -145,9 +144,9 @@ export async function sendSMS(req, res) {
                         if (deliveredMessages === sentMessages) {
                             console.log('All deliveries received, closing connection...');
                             clearTimeout(timeout);
-                            session.unbind();
-                            console.log("after unbinddd successfully")
-                            session.close();
+                            // session.unbind();
+                            // console.log("after unbinddd successfully")
+                            // session.close();
                             resolve({
                                 status: 200,
                                 data: {
@@ -160,8 +159,7 @@ export async function sendSMS(req, res) {
                         }
                     });
 
-                    let hi = await testConnection(session);
-                    console.log("test connection return :", hi);
+                    await testConnection(session);
 
                     for (let i = 0; i < messagesNumber; i++) {
                         const message = messages[i];
