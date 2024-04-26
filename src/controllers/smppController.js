@@ -89,7 +89,7 @@ export async function sendSMS(req, res) {
                 }, async (bindPdu) => {
                     if (bindPdu.command_status !== 0) {
                         console.error("Error binding to SMPP server:", bindPdu.command_status);
-                        return resolve({
+                        return reject({
                             code: 500,
                             message: 'Error binding to SMPP server',
                         });
@@ -97,7 +97,7 @@ export async function sendSMS(req, res) {
 
                     session.on('error', (err) => {
                         console.error("An error occurred:", err);
-                        return resolve({
+                        return reject({
                             code: 500,
                             message: err,
                         });
@@ -161,7 +161,7 @@ export async function sendSMS(req, res) {
                         await testConnection(session);
                     } catch (error) {
                         console.error("Failed to establish connection:", error);
-                        return resolve({
+                        return reject({
                             code: 500,
                             message: error
                         });
@@ -196,7 +196,7 @@ export async function sendSMS(req, res) {
                         })
                             .catch(error => {
                                 console.error('Error sending SMS:', error);
-                                return resolve({
+                                return reject({
                                     code: 500,
                                     message: error,
                                 });
@@ -215,11 +215,11 @@ export async function sendSMS(req, res) {
         })
             .catch(error => {
                 console.error('Rejected:', error);
-                res.status(500).json({ error: 'An error occurred' });
+                res.status(500).json(error);
             });
     } catch (error) {
         console.error("An error occurred:", error);
-        res.status(500).json({ error: 'An error occurred' });
+        res.status(500).json(error);
         return;
     }
 }
