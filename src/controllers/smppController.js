@@ -53,7 +53,10 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
                 }
             });
         }, 2000);
-    });
+    }).catch(error => {
+        console.error('Error in testConnection:', error);
+        throw error;
+    });;
 }
 
 export async function updateCustomers(req, res) {
