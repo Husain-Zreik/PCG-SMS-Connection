@@ -164,14 +164,10 @@ export async function sendSMS(req, res) {
                         resolve({
                             status: 500,
                             data: {
-                                error: error,
-                                total: messagesNumber,
-                                sent: sentMessages,
-                                delivered: deliveredMessages,
-                                message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
+                                error: error
                             }
                         });
-                        return
+                        throw new Error('Failed to establish connection', error);
                     });
 
                     for (let i = 0; i < messagesNumber; i++) {
