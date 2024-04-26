@@ -159,28 +159,17 @@ export async function sendSMS(req, res) {
                         }
                     });
 
-                    try {
-                        await testConnection(session);
-                    } catch (error) {
-                        console.error("Failed to establish connection:", error);
-                        return resolve({
-                            status: 500,
-                            data: {
-                                error: error
-                            }
-                        });
-                    }
-
-                    // await testConnection(session).catch(error => {
+                    // try {
+                    //     await testConnection(session);
+                    // } catch (error) {
                     //     console.error("Failed to establish connection:", error);
-                    //     resolve({
+                    //     return resolve({
                     //         status: 500,
                     //         data: {
                     //             error: error
                     //         }
                     //     });
-                    //     return;
-                    // });                    
+                    // }                 
 
                     for (let i = 0; i < messagesNumber; i++) {
                         const message = messages[i];
