@@ -25,39 +25,37 @@ function updateIsDelivered(receiptedMessageId) {
 }
 
 async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
-    return new Promise((resolve, reject) => {
+    try {
         console.log(`test : `, currentAttempt);
-        if (currentAttempt > maxAttempts) {
-            reject('Max attempts reached without establishing connection');
-            return;
-        }
-
-        setTimeout(async () => {
-            session.submit_sm({
-                destination_addr: "961710034000",
-                short_message: "test connection",
-                registered_delivery: 1,
-            }, async (submitPdu) => {
-                if (submitPdu.command_status === 0) {
-                    console.log(`Successful Connected`);
-                    resolve();
-                } else {
-                    console.error(`Error not Connected. Retrying...`);
-                    try {
-                        await testConnection(session, maxAttempts, currentAttempt + 1);
-                        resolve();
-                    } catch (error) {
-                        reject(error);
-                    }
+        const submitPdu = await new Promise((resolve, reject) => {
+            setTimeout(() => {
+                if (currentAttempt > maxAttempts) {
+                    reject('Max attempts reached without establishing connection');
+                    return;
                 }
-            });
-        }, 2000);
-    })
-        .catch(error => {
-            console.error('Error in testConnection:', error);
-            throw error;
+
+                session.submit_sm({
+                    destination_addr: "961710034000",
+                    short_message: "test connection",
+                    registered_delivery: 1,
+                }, (submitPdu) => {
+                    resolve(submitPdu);
+                });
+            }, 2000);
         });
+
+        if (submitPdu.command_status === 0) {
+            console.log(`Successful Connected`);
+        } else {
+            console.error(`Error not Connected. Retrying...`);
+            await testConnection(session, maxAttempts, currentAttempt + 1);
+        }
+    } catch (error) {
+        console.error('Error in testConnection:', error);
+        throw error;
+    }
 }
+
 
 export async function updateCustomers(req, res) {
     try {
