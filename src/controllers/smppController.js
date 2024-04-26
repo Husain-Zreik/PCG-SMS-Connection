@@ -110,7 +110,6 @@ export async function sendSMS(req, res) {
                         console.log('Timeout reached, closing connection...');
                         session.unbind();
                         console.log("after unbinddd not good    ")
-                        finished();
                         session.close();
                         resolve({
                             status: 500,
@@ -148,7 +147,6 @@ export async function sendSMS(req, res) {
                             clearTimeout(timeout);
                             session.unbind();
                             console.log("after unbinddd successfully")
-                            finished();
                             session.close();
                             resolve({
                                 status: 200,
