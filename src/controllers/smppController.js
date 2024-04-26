@@ -171,6 +171,7 @@ export async function sendSMS(req, res) {
                                 message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
                             }
                         });
+                        return
                     });
 
                     for (let i = 0; i < messagesNumber; i++) {
