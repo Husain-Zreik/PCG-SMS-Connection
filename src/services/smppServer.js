@@ -124,7 +124,7 @@ export default function startSMPPServer() {
 				// activeSessions.splice(activeSessions.indexOf(session), 1);
 				console.log('Session closed by Client');
 				const key = findKeyBySession(session);
-				const index = activeSessionsGroups[key].indexOf(session);
+				const index = activeSessionsGroups[key] ? activeSessionsGroups[key].indexOf(session) : -1;
 				if (index !== -1) {
 					activeSessionsGroups[key].splice(index, 1);
 				}
