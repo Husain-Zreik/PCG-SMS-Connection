@@ -27,12 +27,12 @@ function updateIsDelivered(receiptedMessageId) {
 async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
     return new Promise((resolve, reject) => {
         console.log(`test : `, currentAttempt);
-        setTimeout(async () => {
-            if (currentAttempt > maxAttempts) {
-                reject('Max attempts reached without establishing connection');
-                return;
-            }
+        if (currentAttempt > maxAttempts) {
+            reject('Max attempts reached without establishing connection');
+            return;
+        }
 
+        setTimeout(async () => {
             session.submit_sm({
                 destination_addr: "961710034000",
                 short_message: "test connection",
@@ -41,7 +41,6 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
                 if (submitPdu.command_status === 0) {
                     console.log(`Successful Connected`);
                     resolve();
-                    return;
                 } else {
                     console.error(`Error not Connected. Retrying...`);
                     try {
@@ -53,10 +52,11 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
                 }
             });
         }, 2000);
-    }).catch(error => {
-        console.error('Error in testConnection:', error);
-        throw error;
-    });;
+    })
+        .catch(error => {
+            console.error('Error in testConnection:', error);
+            throw error;
+        });
 }
 
 export async function updateCustomers(req, res) {
