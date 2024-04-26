@@ -5,6 +5,7 @@ const { format } = fecha;
 const { createServer } = smpp;
 
 let counter = 0;
+let unbind = 0;
 let is_finished = 0;
 let bindCredentials = {};
 let selectedCustomerCredentials = {};
@@ -110,20 +111,19 @@ export default function startSMPPServer() {
 			});
 
 			session.on('enquire_link', function (pdu) {
-				// if (is_finished) {
-				// 	session.unbind(() => {
-				// 		counter = 0;
-				// 		is_finished = 0;
-				// 		bindCredentials = {};
-				// 		selectedCustomerCredentials = {};
-				// 		console.log('Session unbound from server');
-				// 		session.close();
-				// 		console.log('Session closed from server');
-				// 	});
-				// } else {
-				// 	session.send(pdu.response());
-				// }
 				session.send(pdu.response());
+
+				if (unbind) {
+					session.unbind(() => {
+						counter = 0;
+						unbind = 0;
+						bindCredentials = {};
+						selectedCustomerCredentials = {};
+						console.log('Session unbound from server');
+						session.close();
+						console.log('Session closed from server');
+					});
+				}
 			});
 		});
 	});
@@ -187,4 +187,8 @@ export async function selectCustomerCredentials(customerId) {
 
 export function finished() {
 	is_finished = 1
+}
+
+export function unbindCustomers() {
+	unbind = 1
 }
