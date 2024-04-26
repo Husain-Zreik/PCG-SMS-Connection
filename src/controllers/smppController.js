@@ -57,9 +57,17 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
 }
 
 export async function updateCustomers(req, res) {
-    console.log("update customers")
-    unbindCustomers();
-    await addBindCredentials(req.body.user_id);
+    try {
+        console.log("update customers")
+        unbindCustomers();
+
+        await addBindCredentials(req.body.user_id);
+
+        return res.status(200).json({ message: 'Customers updated successfully.' });
+    } catch (error) {
+        console.error("An error occurred while updating customers:", error);
+        return res.status(500).json({ error: 'An error occurred while updating customers.' });
+    }
 }
 
 export async function sendSMS(req, res) {
