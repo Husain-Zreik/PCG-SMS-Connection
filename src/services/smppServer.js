@@ -5,7 +5,6 @@ const { format } = fecha;
 const { createServer } = smpp;
 
 let counter = 0;
-let is_finished = 0;
 let bindCredentials = {};
 const activeSessions = [];
 let selectedCustomerCredentials = {};
@@ -38,7 +37,6 @@ export default function startSMPPServer() {
 		session.on('bind_transceiver', function (pdu) {
 			session.pause();
 			console.log("Received bind_transceiver request:", pdu);
-			console.log("server sessions :", server.sessions);
 
 			const ipv4Part = ipv6ToIpv4(session.socket.remoteAddress);
 			let validCredentials = false;
@@ -50,11 +48,6 @@ export default function startSMPPServer() {
 					break;
 				}
 			}
-
-			// if (pdu.system_id === selectedCustomerCredentials.username && pdu.password === selectedCustomerCredentials.password && ipv4Part === selectedCustomerCredentials.ip) {
-			// 	validCredentials = true;
-			// 	is_finished = 0;
-			// }
 
 			if (validCredentials) {
 				session.send(pdu.response());
@@ -175,10 +168,6 @@ export async function selectCustomerCredentials(customerId) {
 	} catch (error) {
 		console.error('Error selecting customer credentials:', error);
 	}
-}
-
-export function finished() {
-	is_finished = 1
 }
 
 export async function closeAllSessions() {

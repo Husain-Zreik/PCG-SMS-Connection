@@ -1,6 +1,6 @@
 import smpp from 'smpp';
 import connection from '../../config/dbConnection.js';
-import { addBindCredentials, closeAllSessions, finished, selectCustomerCredentials } from '../services/smppServer.js';
+import { addBindCredentials, closeAllSessions, selectCustomerCredentials } from '../services/smppServer.js';
 
 function updateStatus(sentToId, status, serverMessageId) {
     const updateQuery = `UPDATE sent_to SET status = ?, server_message_id = ? WHERE id = ?`;
