@@ -24,7 +24,7 @@ function updateIsDelivered(receiptedMessageId) {
     });
 }
 
-async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
+async function testConnection(user, pass, session, maxAttempts = 10, currentAttempt = 1) {
     return new Promise((resolve, reject) => {
         console.log(`test : `, currentAttempt);
         setTimeout(async () => {
@@ -36,8 +36,8 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
             session.submit_sm({
                 destination_addr: "961710034000",
                 short_message: "test connection",
-                username: req.body.customer.username,
-                password: req.body.customer.password,
+                username: user,
+                password: pass,
                 registered_delivery: 1,
             }, async (submitPdu) => {
                 if (submitPdu.command_status === 0) {
@@ -142,7 +142,7 @@ export async function sendSMS(req, res) {
                     });
 
                     try {
-                        await testConnection(session);
+                        await testConnection(req.body.customer.username, req.body.customer.password, session);
                     } catch (error) {
                         console.error("Failed to establish connection:", error);
                         return reject({
