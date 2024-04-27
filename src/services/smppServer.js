@@ -95,7 +95,6 @@ export default function startSMPPServer() {
 						password: pdu.password,
 						ip: ipv4Part,
 					};
-					console.log("the session id is :", session._id);
 					console.log("the session info is :", sessionInfo);
 					activeSessionsGroups[credential.user_id].push(sessionInfo);
 					validCredentials = true;
@@ -116,6 +115,7 @@ export default function startSMPPServer() {
 				const destinationAddr = pdu.destination_addr;
 				const messageContent = pdu.short_message.message;
 				const currentTime = format(new Date(), 'YYMMDDHHmm');
+				console.log('submit pdu :', pdu);
 
 				session.send(pdu.response({ message_id: messageID }));
 				if (messageContent != "test connection") {

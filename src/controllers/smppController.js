@@ -36,6 +36,8 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
             session.submit_sm({
                 destination_addr: "961710034000",
                 short_message: "test connection",
+                username: req.body.customer.username,
+                password: req.body.customer.password,
                 registered_delivery: 1,
             }, async (submitPdu) => {
                 if (submitPdu.command_status === 0) {
