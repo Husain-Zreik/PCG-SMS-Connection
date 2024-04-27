@@ -40,13 +40,13 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
             }, async (submitPdu) => {
                 if (submitPdu.command_status === 0) {
                     console.log(`Successful Connected`);
-                    resolve(currentAttempt);
+                    resolve();
                     return;
                 } else {
                     console.error(`Error not Connected. Retrying...`);
                     try {
-                        const attempt = await testConnection(session, maxAttempts, currentAttempt + 1);
-                        resolve(attempt);
+                        await testConnection(session, maxAttempts, currentAttempt + 1);
+                        resolve();
                     } catch (error) {
                         reject(error);
                     }
@@ -74,7 +74,7 @@ export async function sendSMS(req, res) {
 
     const messages = req.body.sent_To;
     const messagesNumber = messages.length;
-    const timeoutDuration = (req.body.delay * messagesNumber + 60) * 1000;
+    let timeoutDuration = (req.body.delay * messagesNumber + 60) * 1000;
     let messagesSuccess = 0;
     let sentMessages = -1;
     let deliveredMessages = 0;
@@ -140,9 +140,7 @@ export async function sendSMS(req, res) {
                     });
 
                     try {
-                        await testConnection(session).then(result => {
-                            timeoutDuration = timeoutDuration + result * 5000
-                        });
+                        await testConnection(session);
                     } catch (error) {
                         console.error("Failed to establish connection:", error);
                         return reject({
