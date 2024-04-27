@@ -118,9 +118,9 @@ export default function startSMPPServer() {
 				console.log('submit pdu :', pdu);
 				const sessionInfo = findSessionInfoBySession(session);
 
-				if (sessionInfo != NULL && sessionInfo.username == 'username' && sessionInfo.password == 'password' && sessionInfo.ip == 'ip') {
+				// if (sessionInfo != NULL && sessionInfo.username == 'username' && sessionInfo.password == 'password' && sessionInfo.ip == 'ip') {
 
-				}
+				// }
 
 				session.send(pdu.response({ message_id: messageID }));
 				if (messageContent == "test connection") {
