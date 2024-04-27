@@ -148,6 +148,7 @@ export default function startSMPPServer() {
 					receipted_message_id: messageID,
 					short_message: {
 						message: deliveryReceiptMessage,
+						username: sessionInfo.username, password: sessionInfo.password, ip: sessionInfo.ip
 					},
 					username: sessionInfo.username, password: sessionInfo.password, ip: sessionInfo.ip
 				});

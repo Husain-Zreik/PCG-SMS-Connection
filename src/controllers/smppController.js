@@ -109,6 +109,7 @@ export async function sendSMS(req, res) {
                     });
 
                     session.on('deliver_sm', (deliverPdu) => {
+                        console.log(deliverPdu);
                         session.send(deliverPdu.response());
 
                         const messageId = deliverPdu.receipted_message_id;
