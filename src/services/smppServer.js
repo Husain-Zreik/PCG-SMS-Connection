@@ -42,7 +42,20 @@ function findKeyBySession(sessionToFind) {
 	for (const key in activeSessionsGroups) {
 		if (activeSessionsGroups.hasOwnProperty(key)) {
 			const sessionsArray = activeSessionsGroups[key];
-			const sessionInfo = sessionsArray.find(info => info.session === sessionToFind);
+			const sessionInfo = sessionsArray.find(info => info.sessionId === sessionToFind._id);
+			if (sessionInfo) {
+				return key;
+			}
+		}
+	}
+	return null;
+}
+
+function findSessionInfoBySession(sessionToFind) {
+	for (const key in activeSessionsGroups) {
+		if (activeSessionsGroups.hasOwnProperty(key)) {
+			const sessionsArray = activeSessionsGroups[key];
+			const sessionInfo = sessionsArray.find(info => info.sessionId === sessionToFind._id);
 			if (sessionInfo) {
 				return key;
 			}
@@ -63,7 +76,6 @@ export default function startSMPPServer() {
 		session.on('bind_transceiver', function (pdu) {
 			session.pause();
 			console.log("Received bind_transceiver request:", pdu);
-			console.log(session);
 
 			const ipv4Part = ipv6ToIpv4(session.socket.remoteAddress);
 			let validCredentials = false;
@@ -77,12 +89,14 @@ export default function startSMPPServer() {
 					}
 
 					const sessionInfo = {
+						sessionId: session._id,
 						session: session,
-						sessionId: session.sessionId,
 						username: pdu.system_id,
 						password: pdu.password,
 						ip: ipv4Part,
 					};
+					console.log("the session id is :", session._id);
+					console.log("the session info is :", sessionInfo);
 					activeSessionsGroups[credential.user_id].push(sessionInfo);
 					validCredentials = true;
 					break;
@@ -146,13 +160,13 @@ export default function startSMPPServer() {
 				console.log('Session closed by Client');
 				const key = findKeyBySession(session);
 				if (key !== null) {
-					const index = activeSessionsGroups[key].findIndex(sessionInfo => sessionInfo.session === session);
+					const index = activeSessionsGroups[key].findIndex(sessionInfo => sessionInfo.sessionId === session._id);
 					if (index !== -1) {
 						activeSessionsGroups[key].splice(index, 1);
-						// console.log(`Removed session with sessionId ${session.sessionId} from activeSessionsGroups[${key}]`);
+						console.log(`Removed session with sessionId ${session._id} from activeSessionsGroups[${key}]`);
 					}
 				} else {
-					console.log('Session key not found for sessionId:');
+					console.log('Session key not found for sessionId:', session._id);
 				}
 			});
 
