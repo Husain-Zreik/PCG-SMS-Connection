@@ -46,7 +46,8 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
                     console.error(`Error not Connected. Retrying...`);
                     try {
                         await testConnection(session, maxAttempts, currentAttempt + 1);
-                        resolve(currentAttempt);
+                        resolve();
+                        return currentAttempt;
                     } catch (error) {
                         reject(error);
                     }
@@ -158,9 +159,10 @@ export async function sendSMS(req, res) {
                     });
 
                     try {
-                        await testConnection(session).then(result => {
+                        const hi = await testConnection(session).then(result => {
                             console.log('Resolved:', result);
                         });
+                        console.log('Return:', hi);
                     } catch (error) {
                         console.error("Failed to establish connection:", error);
                         return reject({
