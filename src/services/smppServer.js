@@ -38,6 +38,19 @@ function findKeyBySession(session) {
 	return null;
 }
 
+function findKeyBySession(sessionToFind) {
+	for (const key in activeSessionsGroups) {
+		if (activeSessionsGroups.hasOwnProperty(key)) {
+			const sessionsArray = activeSessionsGroups[key];
+			const sessionInfo = sessionsArray.find(info => info.session === sessionToFind);
+			if (sessionInfo) {
+				return key;
+			}
+		}
+	}
+	return null;
+}
+
 export default function startSMPPServer() {
 
 	var server = createServer({
@@ -61,7 +74,16 @@ export default function startSMPPServer() {
 					if (!activeSessionsGroups.hasOwnProperty(credential.user_id)) {
 						activeSessionsGroups[credential.user_id] = [];
 					}
-					activeSessionsGroups[credential.user_id].push(session);
+					console.log(session);
+
+					const sessionInfo = {
+						session: session,
+						sessionId: session.sessionId,
+						username: pdu.system_id,
+						password: pdu.password,
+						ip: ipv4Part,
+					};
+					activeSessionsGroups[credential.user_id].push(sessionInfo);
 					validCredentials = true;
 					break;
 				}
@@ -121,7 +143,6 @@ export default function startSMPPServer() {
 			});
 
 			session.on('close', () => {
-				// activeSessions.splice(activeSessions.indexOf(session), 1);
 				console.log('Session closed by Client');
 				const key = findKeyBySession(session);
 				const index = activeSessionsGroups[key] ? activeSessionsGroups[key].indexOf(session) : -1;
@@ -195,15 +216,34 @@ export async function selectCustomerCredentials(customerId) {
 	}
 }
 
+// export async function closeAllSessions(userId) {
+// 	try {
+// 		if (activeSessionsGroups[userId]) {
+// 			activeSessionsGroups[userId].forEach(session => {
+// 				session.unbind(() => {
+// 					session.close();
+// 				});
+// 			});
+// 			console.log("Removed Active Sessions");
+// 		} else {
+// 			console.log("No active sessions found for the user:", userId);
+// 		}
+// 	} catch (error) {
+// 		console.error("An error occurred while closing sessions:", error);
+// 	}
+// }
+
 export async function closeAllSessions(userId) {
 	try {
 		if (activeSessionsGroups[userId]) {
-			activeSessionsGroups[userId].forEach(session => {
+			activeSessionsGroups[userId].forEach(sessionInfo => {
+				const session = sessionInfo.session;
 				session.unbind(() => {
 					session.close();
 				});
 			});
-			console.log("Removed Active Sessions");
+			delete activeSessionsGroups[userId];
+			console.log("Removed Active Sessions for user:", userId);
 		} else {
 			console.log("No active sessions found for the user:", userId);
 		}
@@ -211,13 +251,3 @@ export async function closeAllSessions(userId) {
 		console.error("An error occurred while closing sessions:", error);
 	}
 }
-
-// export async function closeAllSessions() {
-
-// 	activeSessions.forEach(session => {
-// 		session.unbind(() => {
-// 			session.close();
-// 		});
-// 	});
-// 	console.log("Removed Active Sessions");
-// }
