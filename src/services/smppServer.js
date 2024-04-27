@@ -26,17 +26,17 @@ function ipv6ToIpv4(ipv6Address) {
 	}
 }
 
-function findKeyBySession(session) {
-	for (const key in activeSessionsGroups) {
-		if (activeSessionsGroups.hasOwnProperty(key)) {
-			const sessionsArray = activeSessionsGroups[key];
-			if (sessionsArray.includes(session)) {
-				return key;
-			}
-		}
-	}
-	return null;
-}
+// function findKeyBySession(session) {
+// 	for (const key in activeSessionsGroups) {
+// 		if (activeSessionsGroups.hasOwnProperty(key)) {
+// 			const sessionsArray = activeSessionsGroups[key];
+// 			if (sessionsArray.includes(session)) {
+// 				return key;
+// 			}
+// 		}
+// 	}
+// 	return null;
+// }
 
 function findKeyBySession(sessionToFind) {
 	for (const key in activeSessionsGroups) {
@@ -63,6 +63,7 @@ export default function startSMPPServer() {
 		session.on('bind_transceiver', function (pdu) {
 			session.pause();
 			console.log("Received bind_transceiver request:", pdu);
+			console.log(session);
 
 			const ipv4Part = ipv6ToIpv4(session.socket.remoteAddress);
 			let validCredentials = false;
@@ -74,7 +75,6 @@ export default function startSMPPServer() {
 					if (!activeSessionsGroups.hasOwnProperty(credential.user_id)) {
 						activeSessionsGroups[credential.user_id] = [];
 					}
-					console.log(session);
 
 					const sessionInfo = {
 						session: session,
@@ -145,9 +145,14 @@ export default function startSMPPServer() {
 			session.on('close', () => {
 				console.log('Session closed by Client');
 				const key = findKeyBySession(session);
-				const index = activeSessionsGroups[key] ? activeSessionsGroups[key].indexOf(session) : -1;
-				if (index !== -1) {
-					activeSessionsGroups[key].splice(index, 1);
+				if (key !== null) {
+					const index = activeSessionsGroups[key].findIndex(sessionInfo => sessionInfo.session === session);
+					if (index !== -1) {
+						activeSessionsGroups[key].splice(index, 1);
+						// console.log(`Removed session with sessionId ${session.sessionId} from activeSessionsGroups[${key}]`);
+					}
+				} else {
+					console.log('Session key not found for sessionId:');
 				}
 			});
 
