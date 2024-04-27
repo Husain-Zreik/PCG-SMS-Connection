@@ -72,14 +72,19 @@ export async function updateCustomers(req, res) {
 
 export async function sendSMS(req, res) {
 
+    const messages = req.body.sent_To;
+    const messagesNumber = messages.length;
+    const timeoutDuration = (req.body.delay * messagesNumber + 60) * 1000;
+    let messagesSuccess = 0;
+    let sentMessages = -1;
+    let deliveredMessages = 0;
+
     try {
         const session = smpp.connect({
             url: `smpp://${req.body.vendor.ip}:${req.body.vendor.port}`,
             auto_enquire_link_period: 10000,
             debug: true
         });
-
-        // await selectCustomerCredentials(req.body.customer.id);
 
         await new Promise((resolve, reject) => {
             session.on('connect', () => {
@@ -102,28 +107,6 @@ export async function sendSMS(req, res) {
                             message: err,
                         });
                     });
-
-
-                    const messages = req.body.sent_To;
-                    const messagesNumber = messages.length;
-                    const timeoutDuration = (req.body.delay * messagesNumber + 60) * 1000;
-                    let messagesSuccess = 0;
-                    let sentMessages = -1;
-                    let deliveredMessages = 0;
-
-                    const timeout = setTimeout(() => {
-                        console.log('Timeout reached, closing connection...');
-                        return resolve({
-                            code: 500,
-                            message: 'Request time out and not all messages have been delivered',
-                            total: messagesNumber,
-                            sent: sentMessages + 1,
-                            delivered: deliveredMessages,
-                            info_message: `${sentMessages + 1} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
-
-                        });
-
-                    }, timeoutDuration);
 
                     session.on('deliver_sm', (deliverPdu) => {
                         session.send(deliverPdu.response());
@@ -152,16 +135,14 @@ export async function sendSMS(req, res) {
                                 sent: sentMessages,
                                 delivered: deliveredMessages,
                                 message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesNumber} messages delivered successfully.`
-
                             });
                         }
                     });
 
                     try {
-                        const hi = await testConnection(session).then(result => {
-                            console.log('Resolved:', result);
+                        await testConnection(session).then(result => {
+                            timeoutDuration = timeoutDuration + result * 5000
                         });
-                        console.log('Return:', hi);
                     } catch (error) {
                         console.error("Failed to establish connection:", error);
                         return reject({
@@ -169,6 +150,18 @@ export async function sendSMS(req, res) {
                             message: error
                         });
                     }
+
+                    const timeout = setTimeout(() => {
+                        console.log('Timeout reached, closing connection...');
+                        return resolve({
+                            code: 500,
+                            message: 'Request time out and not all messages have been delivered',
+                            total: messagesNumber,
+                            sent: sentMessages + 1,
+                            delivered: deliveredMessages,
+                            info_message: `${sentMessages + 1} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
+                        });
+                    }, timeoutDuration);
 
                     for (let i = 0; i < messagesNumber; i++) {
                         const message = messages[i];
@@ -178,7 +171,6 @@ export async function sendSMS(req, res) {
                                     destination_addr: message.number,
                                     short_message: message.content,
                                     source_addr: message.source,
-                                    //add the source (instagram)
                                     registered_delivery: 1,
                                 }, (submitPdu) => {
 
