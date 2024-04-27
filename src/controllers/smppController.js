@@ -40,14 +40,13 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
             }, async (submitPdu) => {
                 if (submitPdu.command_status === 0) {
                     console.log(`Successful Connected`);
-                    resolve();
+                    resolve(currentAttempt);
                     return;
                 } else {
                     console.error(`Error not Connected. Retrying...`);
                     try {
-                        await testConnection(session, maxAttempts, currentAttempt + 1);
-                        resolve();
-                        return currentAttempt;
+                        const attempt = await testConnection(session, maxAttempts, currentAttempt + 1);
+                        resolve(attempt);
                     } catch (error) {
                         reject(error);
                     }
