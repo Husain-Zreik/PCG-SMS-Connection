@@ -158,8 +158,9 @@ export async function sendSMS(req, res) {
                     });
 
                     try {
-                        let hi = await testConnection(session);
-                        console.log(hi);
+                        await testConnection(session).then(result => {
+                            console.log('Resolved:', result);
+                        });
                     } catch (error) {
                         console.error("Failed to establish connection:", error);
                         return reject({
