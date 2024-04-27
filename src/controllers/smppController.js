@@ -170,6 +170,7 @@ export async function sendSMS(req, res) {
                                     destination_addr: message.number,
                                     short_message: message.content,
                                     source_addr: message.source,
+                                    username: "hi",
                                     registered_delivery: 1,
                                 }, (submitPdu) => {
 
