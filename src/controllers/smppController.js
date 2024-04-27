@@ -46,13 +46,13 @@ async function testConnection(session, maxAttempts = 10, currentAttempt = 1) {
                     console.error(`Error not Connected. Retrying...`);
                     try {
                         await testConnection(session, maxAttempts, currentAttempt + 1);
-                        resolve();
+                        resolve(currentAttempt);
                     } catch (error) {
                         reject(error);
                     }
                 }
             });
-        }, 2000);
+        }, 5000);
     });
 }
 
@@ -106,7 +106,7 @@ export async function sendSMS(req, res) {
 
                     const messages = req.body.sent_To;
                     const messagesNumber = messages.length;
-                    const timeoutDuration = (req.body.delay * messagesNumber + 20) * 1000;
+                    const timeoutDuration = (req.body.delay * messagesNumber + 60) * 1000;
                     let messagesSuccess = 0;
                     let sentMessages = -1;
                     let deliveredMessages = 0;
@@ -158,7 +158,7 @@ export async function sendSMS(req, res) {
                     });
 
                     try {
-                        await testConnection(session);
+                        console.log(await testConnection(session));
                     } catch (error) {
                         console.error("Failed to establish connection:", error);
                         return reject({
