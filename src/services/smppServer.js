@@ -57,7 +57,7 @@ function findSessionInfoBySession(sessionToFind) {
 			const sessionsArray = activeSessionsGroups[key];
 			const sessionInfo = sessionsArray.find(info => info.sessionId === sessionToFind._id);
 			if (sessionInfo) {
-				return key;
+				return sessionInfo;
 			}
 		}
 	}
@@ -116,8 +116,14 @@ export default function startSMPPServer() {
 				const messageContent = pdu.short_message.message;
 				const currentTime = format(new Date(), 'YYMMDDHHmm');
 				console.log('submit pdu :', pdu);
+				const sessionInfo = findSessionInfoBySession(session);
 
-				session.send(pdu.response({ message_id: messageID }));
+
+				// if (sessionInfo != NULL && sessionInfo.username == 'username' && sessionInfo.password == 'password' && sessionInfo.ip == 'ip') {
+
+				// }
+
+				session.send(pdu.response({ message_id: messageID, username: sessionInfo.username, password: sessionInfo.password, ip: sessionInfo.ip }));
 				if (messageContent != "test connection") {
 
 					const deliveryReceiptMessage = `id:${messageID} sub:001 dlvrd:001 submit date:${currentTime} done date:${currentTime} stat:DELIVRD err:000 text: ${messageContent}`;
