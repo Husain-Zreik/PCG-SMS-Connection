@@ -149,10 +149,10 @@ export default function startSMPPServer() {
 					session.deliver_sm({
 						service_type: '',
 						source_addr_ton: 0,
-						source_addr: "INVALID",
+						source_addr: destinationAddr,
 						dest_addr_ton: 0,
 						dest_addr_npi: 0,
-						destination_addr: '',
+						destination_addr: 'INVALID',
 						esm_class: 4,
 						protocol_id: 0,
 						priority_flag: 0,
