@@ -25,7 +25,7 @@ function updateIsDelivered(receiptedMessageId) {
 }
 
 async function testConnection(req, session, maxAttempts = 10, currentAttempt = 1) {
-    console.log(req.body);
+    console.log(req);
     return new Promise((resolve, reject) => {
         console.log(`test : `, currentAttempt);
         setTimeout(async () => {
