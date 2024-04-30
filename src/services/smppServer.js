@@ -165,9 +165,12 @@ export default function startSMPPServer() {
 						message_state: 2,
 						receipted_message_id: messageID,
 						short_message: {
-							message: deliveryReceiptMessage,
+							udh: deliveryReceiptMessage,
+							message: messageContent,
 						},
 					});
+
+					console.log();
 
 				} else {
 					session.send(pdu.response({ message_id: messageID }));

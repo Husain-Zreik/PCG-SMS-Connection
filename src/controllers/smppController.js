@@ -25,7 +25,6 @@ function updateIsDelivered(receiptedMessageId) {
 }
 
 async function testConnection(req, session, maxAttempts = 10, currentAttempt = 1) {
-    console.log(req);
     return new Promise((resolve, reject) => {
         console.log(`test : `, currentAttempt);
         setTimeout(async () => {
@@ -121,7 +120,7 @@ export async function sendSMS(req, res) {
                             console.log("The connection session is invalid");
                             return reject({
                                 code: 500,
-                                message: error
+                                message: "The connection session is invalid"
                             });
                         }
 
