@@ -145,7 +145,10 @@ export default function startSMPPServer() {
 						messageID = '';
 					} else {
 
-						session.send(pdu.response({ message_id: messageID }));
+						session.send(pdu.response({
+							message_id: messageID,
+							command_status: 12,
+						}));
 					}
 					// const deliveryReceiptMessage = `id:${messageID} sub:001 dlvrd:001 submit date:${currentTime} done date:${currentTime} stat:DELIVRD err:000 text: ${messageContent}`;
 
