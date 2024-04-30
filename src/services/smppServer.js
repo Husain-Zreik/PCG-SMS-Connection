@@ -152,7 +152,7 @@ export default function startSMPPServer() {
 						source_addr: destinationAddr,
 						dest_addr_ton: 0,
 						dest_addr_npi: 0,
-						destination_addr: '00000',
+						destination_addr: '',
 						esm_class: 4,
 						protocol_id: 0,
 						priority_flag: 0,
@@ -165,16 +165,15 @@ export default function startSMPPServer() {
 						message_state: 2,
 						receipted_message_id: messageID,
 						short_message: {
-							udh: deliveryReceiptMessage,
-							message: messageContent,
+							message: deliveryReceiptMessage,
 						},
 					});
-
-					console.log();
 
 				} else {
 					session.send(pdu.response({ message_id: messageID }));
 					const deliveryReceiptMessage = `id:${messageID} sub:001 dlvrd:001 submit date:${currentTime} done date:${currentTime} stat:DELIVRD err:000 text: ${messageContent}`;
+
+					const buf = Buffer.from(`id:${messageID} sub:000 dlvrd:000 submitdate:${Math.floor(new Date().getTime() / 1000.0)} donedate:${Math.floor(new Date().getTime() / 1000.0)} stat:DELIVRD err:4 text:`, 'utf8');
 
 					session.deliver_sm({
 						service_type: '',
@@ -195,7 +194,9 @@ export default function startSMPPServer() {
 						message_state: 2,
 						receipted_message_id: messageID,
 						short_message: {
-							message: deliveryReceiptMessage,
+							udh: new Uint8Array(buf),
+							message: 'short_message hi hih hi'
+							// message: deliveryReceiptMessage,
 						},
 					});
 				}
