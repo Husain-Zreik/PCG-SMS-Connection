@@ -1,6 +1,6 @@
 import smpp from 'smpp';
 import connection from '../../config/dbConnection.js';
-import { addBindCredentials, closeAllSessions, selectCustomerCredentials } from '../services/smppServer.js';
+import { addBindCredentials, closeAllSessions } from '../services/smppServer.js';
 
 function updateStatus(sentToId, status, serverMessageId) {
     const updateQuery = `UPDATE sent_to SET status = ?, server_message_id = ? WHERE id = ?`;
@@ -115,14 +115,6 @@ export async function sendSMS(req, res) {
 
                         const messageId = deliverPdu.receipted_message_id;
                         const testMessage = deliverPdu.source_addr;
-
-                        if (deliverPdu.destination_addr === "00000") {
-                            console.log("The connection session is invalid");
-                            return reject({
-                                code: 500,
-                                message: "The connection session is invalid"
-                            });
-                        }
 
                         if (messageId && testMessage !== "961710034000") {
                             if (deliverPdu.command_status === 0) {
