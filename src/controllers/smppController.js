@@ -47,7 +47,7 @@ async function testConnection(req, session, maxAttempts = 10, currentAttempt = 1
                 } else {
                     console.error(`Error not Connected. Retrying...`);
                     try {
-                        await testConnection(session, maxAttempts, currentAttempt + 1);
+                        await testConnection(req, session, maxAttempts, currentAttempt + 1);
                         resolve();
                     } catch (error) {
                         reject(error);
