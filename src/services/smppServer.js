@@ -7,7 +7,6 @@ const { createServer } = smpp;
 let counter = 0;
 let bindCredentials = {};
 const activeSessionsGroups = {};
-let selectedCustomerCredentials;
 
 function generateMessageID() {
 	const timestamp = new Date().toISOString().replace(/\D/g, '').slice(0, -3);
@@ -95,32 +94,27 @@ export default function startSMPPServer() {
 			}
 
 			session.on('submit_sm', function (pdu) {
-				let messageID = generateMessageID();
-				let messageContent = pdu.short_message.message;
+
+				const messageID = generateMessageID();
 				const destinationAddr = pdu.destination_addr;
+				const messageContent = pdu.short_message.message;
 				const currentTime = format(new Date(), 'YYMMDDHHmm');
-				console.log('submit pdu :', pdu);
-
 				const sessionInfo = findSessionInfoBySession(session);
-				const parts = messageContent.split(';');
 
+
+				const parts = messageContent.split(';');
 				const firstWord = parts[0].trim();
-				console.log("first word :", firstWord);
 
 				if (firstWord === 'test') {
 					const ip = parts[1];
 					const username = parts[2];
 					const password = parts[3];
 
-					console.log('client data', 'ip', ip, 'username', username, 'password', password);
-					console.log('session data', 'ip', sessionInfo.ip, 'username', sessionInfo.username, 'password', sessionInfo.password);
+					console.log('client / session', 'ip : ', ip, ' ', sessionInfo.ip, 'username', username, ' ', sessionInfo.username, 'password', password, ' ', sessionInfo.password);
 
 					if (sessionInfo == null || sessionInfo.username != username || sessionInfo.password != password || sessionInfo.ip != ip) {
-						console.log('it is a test message and invalid');
-						session.send(pdu.response({
-							message_id: messageID,
-							command_status: 12,
-						}));
+						console.log('The customer and vendor credentials are different from each others');
+						session.send(pdu.response({ command_status: 12, }));
 					} else {
 						session.send(pdu.response({ message_id: messageID, }));
 					}
@@ -162,7 +156,6 @@ export default function startSMPPServer() {
 				session.send(pdu.response());
 				session.close();
 			});
-
 			session.on('close', () => {
 				console.log('Session closed by Client');
 				const key = findKeyBySession(session);
@@ -227,37 +220,6 @@ export async function addBindCredentials(userId) {
 		console.error('Error adding customer credentials:', error);
 	}
 }
-
-export async function selectCustomerCredentials(customerId) {
-	try {
-		console.log(customerId);
-		if (bindCredentials.hasOwnProperty(customerId)) {
-			selectedCustomerCredentials = bindCredentials[customerId];
-			console.log('selectedCustomerCredentials:', selectedCustomerCredentials);
-		} else {
-			throw new Error(`Customer with ID ${customerId} not found.`);
-		}
-	} catch (error) {
-		console.error('Error selecting customer credentials:', error);
-	}
-}
-
-// export async function closeAllSessions(userId) {
-// 	try {
-// 		if (activeSessionsGroups[userId]) {
-// 			activeSessionsGroups[userId].forEach(session => {
-// 				session.unbind(() => {
-// 					session.close();
-// 				});
-// 			});
-// 			console.log("Removed Active Sessions");
-// 		} else {
-// 			console.log("No active sessions found for the user:", userId);
-// 		}
-// 	} catch (error) {
-// 		console.error("An error occurred while closing sessions:", error);
-// 	}
-// }
 
 export async function closeAllSessions(userId) {
 	try {

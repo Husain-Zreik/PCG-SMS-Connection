@@ -34,12 +34,11 @@ async function testConnection(req, session, maxAttempts = 10, currentAttempt = 1
             }
 
             session.submit_sm({
-                destination_addr: "961710034000",
+                destination_addr: "96100000000",
                 short_message: `test;${req.body.customer.ip};${req.body.customer.username};${req.body.customer.password}`,
                 registered_delivery: 1,
             }, async (submitPdu) => {
                 if (submitPdu.command_status === 0) {
-                    console.log('submitPdu :', submitPdu);
                     console.log(`Successful Connected`);
                     resolve();
                     return;
@@ -110,20 +109,16 @@ export async function sendSMS(req, res) {
                     });
 
                     session.on('deliver_sm', (deliverPdu) => {
-                        console.log('deliverPdu :', deliverPdu);
                         session.send(deliverPdu.response());
 
                         const messageId = deliverPdu.receipted_message_id;
-                        const testMessage = deliverPdu.source_addr;
 
-                        if (messageId && testMessage !== "961710034000") {
-                            if (deliverPdu.command_status === 0) {
-                                updateIsDelivered(messageId);
-                                deliveredMessages++;
-                                console.log(`${deliveredMessages} out of ${messagesSuccess} messages delivered successfully`);
-                            } else {
-                                console.error(`Error delivering message with ID ${messageId}:`, deliverPdu.command_status);
-                            }
+                        if (messageId && deliverPdu.command_status === 0) {
+                            updateIsDelivered(messageId);
+                            deliveredMessages++;
+                            console.log(`${deliveredMessages} out of ${messagesSuccess} messages delivered successfully`);
+                        } else if (messageId) {
+                            console.error(`Error delivering message with ID ${messageId}:`, deliverPdu.command_status);
                         }
 
                         if (deliveredMessages === sentMessages) {
