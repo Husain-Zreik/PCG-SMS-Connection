@@ -142,7 +142,35 @@ export default function startSMPPServer() {
 					if (sessionInfo == null || sessionInfo.username != username || sessionInfo.password != password || sessionInfo.ip != ip) {
 						console.log('it is a test message and invalid');
 						messageID = generateMessageID(true);
+						messageID = '';
 					}
+					session.send(pdu.response({ message_id: messageID }));
+					// const deliveryReceiptMessage = `id:${messageID} sub:001 dlvrd:001 submit date:${currentTime} done date:${currentTime} stat:DELIVRD err:000 text: ${messageContent}`;
+
+					// session.deliver_sm({
+					// 	service_type: '',
+					// 	source_addr_ton: 0,
+					// 	source_addr: destinationAddr,
+					// 	dest_addr_ton: 0,
+					// 	dest_addr_npi: 0,
+					// 	destination_addr: '',
+					// 	esm_class: 4,
+					// 	protocol_id: 0,
+					// 	priority_flag: 0,
+					// 	schedule_delivery_time: '',
+					// 	validity_period: '',
+					// 	registered_delivery: 0,
+					// 	replace_if_present_flag: 0,
+					// 	data_coding: 0,
+					// 	sm_default_msg_id: 0,
+					// 	message_state: 2,
+					// 	receipted_message_id: messageID,
+					// 	short_message: {
+					// 		message: deliveryReceiptMessage,
+					// 	},
+					// });
+
+				} else {
 					session.send(pdu.response({ message_id: messageID }));
 					const deliveryReceiptMessage = `id:${messageID} sub:001 dlvrd:001 submit date:${currentTime} done date:${currentTime} stat:DELIVRD err:000 text: ${messageContent}`;
 
@@ -166,37 +194,6 @@ export default function startSMPPServer() {
 						receipted_message_id: messageID,
 						short_message: {
 							message: deliveryReceiptMessage,
-						},
-					});
-
-				} else {
-					session.send(pdu.response({ message_id: messageID }));
-					const deliveryReceiptMessage = `id:${messageID} sub:001 dlvrd:001 submit date:${currentTime} done date:${currentTime} stat:DELIVRD err:000 text: ${messageContent}`;
-
-					const buf = Buffer.from(`id:${messageID} sub:000 dlvrd:000 submitdate:${Math.floor(new Date().getTime() / 1000.0)} donedate:${Math.floor(new Date().getTime() / 1000.0)} stat:DELIVRD err:4 text:`, 'utf8');
-
-					session.deliver_sm({
-						service_type: '',
-						source_addr_ton: 0,
-						source_addr: destinationAddr,
-						dest_addr_ton: 0,
-						dest_addr_npi: 0,
-						destination_addr: '',
-						esm_class: 4,
-						protocol_id: 0,
-						priority_flag: 0,
-						schedule_delivery_time: '',
-						validity_period: '',
-						registered_delivery: 0,
-						replace_if_present_flag: 0,
-						data_coding: 0,
-						sm_default_msg_id: 0,
-						message_state: 2,
-						receipted_message_id: messageID,
-						short_message: {
-							udh: new Uint8Array(buf),
-							message: 'short_message hi hih hi'
-							// message: deliveryReceiptMessage,
 						},
 					});
 				}
