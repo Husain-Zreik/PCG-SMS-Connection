@@ -110,12 +110,21 @@ export async function sendSMS(req, res) {
                     });
 
                     session.on('deliver_sm', (deliverPdu) => {
+                        console.log('deliverPdu :', deliverPdu);
                         session.send(deliverPdu.response());
 
                         const messageId = deliverPdu.receipted_message_id;
                         const testMessage = deliverPdu.source_addr;
 
-                        if (messageId && testMessage != "961710034000") {
+                        if (testMessage === "INVALID") {
+                            console.log("The connection session is invalid");
+                            return reject({
+                                code: 500,
+                                message: error
+                            });
+                        }
+
+                        if (messageId && testMessage !== "961710034000") {
                             if (deliverPdu.command_status === 0) {
                                 updateIsDelivered(messageId);
                                 deliveredMessages++;
@@ -123,8 +132,6 @@ export async function sendSMS(req, res) {
                             } else {
                                 console.error(`Error delivering message with ID ${messageId}:`, deliverPdu.command_status);
                             }
-                        } else {
-                            console.log("No received message id or it is a test message");
                         }
 
                         if (deliveredMessages === sentMessages) {

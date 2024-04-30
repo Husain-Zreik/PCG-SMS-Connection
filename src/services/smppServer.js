@@ -137,13 +137,37 @@ export default function startSMPPServer() {
 					const password = parts[3];
 
 					console.log('client data', 'ip', ip, 'username', username, 'password', password);
-					console.log('session data', sessionInfo, 'ip', sessionInfo.ip, 'username', sessionInfo.username, 'password', sessionInfo.password);
+					console.log('session data', 'ip', sessionInfo.ip, 'username', sessionInfo.username, 'password', sessionInfo.password);
 
 					if (sessionInfo == null || sessionInfo.username != username || sessionInfo.password != password || sessionInfo.ip != ip) {
 						console.log('it is a test message and invalid');
 						messageID = generateMessageID(true);
 					}
 					session.send(pdu.response({ message_id: messageID }));
+					const deliveryReceiptMessage = `id:${messageID} sub:001 dlvrd:001 submit date:${currentTime} done date:${currentTime} stat:DELIVRD err:000 text: ${messageContent}`;
+
+					session.deliver_sm({
+						service_type: '',
+						source_addr_ton: 0,
+						source_addr: "INVALID",
+						dest_addr_ton: 0,
+						dest_addr_npi: 0,
+						destination_addr: '',
+						esm_class: 4,
+						protocol_id: 0,
+						priority_flag: 0,
+						schedule_delivery_time: '',
+						validity_period: '',
+						registered_delivery: 0,
+						replace_if_present_flag: 0,
+						data_coding: 0,
+						sm_default_msg_id: 0,
+						message_state: 2,
+						receipted_message_id: messageID,
+						short_message: {
+							message: deliveryReceiptMessage,
+						},
+					});
 
 				} else {
 					session.send(pdu.response({ message_id: messageID }));
