@@ -59,7 +59,7 @@ export default function startSMPPServer() {
 
 		session.on('bind_transceiver', function (pdu) {
 			session.pause();
-			console.log("Received bind_transceiver request:", pdu);
+			console.log("Received bind_transceiver request");
 
 			const ipv4Part = ipv6ToIpv4(session.socket.remoteAddress);
 			let validCredentials = false;
@@ -156,6 +156,7 @@ export default function startSMPPServer() {
 				session.send(pdu.response());
 				session.close();
 			});
+
 			session.on('close', () => {
 				console.log('Session closed by Client');
 				const key = findKeyBySession(session);
