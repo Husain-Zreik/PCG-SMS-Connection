@@ -11,7 +11,7 @@ const port = process.env.NODE_PORT;
 const app = express();
 
 app.use(cors());
-app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.json({ limit: '20mb' }));
 app.use('/sms', smsRouter);
 
 const server = http.createServer(app);
