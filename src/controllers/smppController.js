@@ -82,7 +82,7 @@ export async function sendSMS(req, res) {
     try {
         const session = smpp.connect({
             url: `smpp://${req.body.vendor.ip}:${req.body.vendor.port}`,
-            auto_enquire_link_period: 10000,
+            auto_enquire_link_period: 20000,
             debug: true
         });
 
