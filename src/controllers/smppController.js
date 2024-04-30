@@ -29,12 +29,11 @@ async function testConnection(req, session, maxAttempts = 10, currentAttempt = 1
         console.log(`test : `, currentAttempt);
         setTimeout(async () => {
             if (currentAttempt > maxAttempts) {
-                reject('Max attempts reached without establishing connection');
+                reject('Max attempts reached without establishing connection. Check the credentials if they are correct !');
                 return;
             }
 
             session.submit_sm({
-                // destination_addr: "961710034000",
                 destination_addr: "96171392992",
                 short_message: `test;${req.body.customer.ip};${req.body.customer.username};${req.body.customer.password}`,
                 registered_delivery: 1,
