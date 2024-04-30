@@ -10,11 +10,19 @@ let bindCredentials = {};
 const activeSessionsGroups = {};
 let selectedCustomerCredentials;
 
-function generateMessageID() {
+// function generateMessageID() {
+// 	const timestamp = new Date().toISOString().replace(/\D/g, '').slice(0, -3);
+// 	counter++;
+
+// 	return `${timestamp}${counter.toString().padStart(3, '0')}`;
+// }
+
+function generateMessageID(isValid = false) {
 	const timestamp = new Date().toISOString().replace(/\D/g, '').slice(0, -3);
 	counter++;
 
-	return `${timestamp}${counter.toString().padStart(3, '0')}`;
+	const prefix = isValid ? 'X' : '';
+	return `${prefix}${timestamp}${counter.toString().padStart(3, '0')}`;
 }
 
 function ipv6ToIpv4(ipv6Address) {
@@ -111,46 +119,59 @@ export default function startSMPPServer() {
 			}
 
 			session.on('submit_sm', function (pdu) {
-				const messageID = generateMessageID();
-				const destinationAddr = pdu.destination_addr;
+				let messageID = generateMessageID();
 				let messageContent = pdu.short_message.message;
+				const destinationAddr = pdu.destination_addr;
 				const currentTime = format(new Date(), 'YYMMDDHHmm');
 				console.log('submit pdu :', pdu);
+
 				const sessionInfo = findSessionInfoBySession(session);
+				const parts = messageContent.split(';');
 
-				// if (sessionInfo != NULL && sessionInfo.username == 'username' && sessionInfo.password == 'password' && sessionInfo.ip == 'ip') {
+				const firstWord = parts[0].trim();
+				console.log("first word :", firstWord);
 
-				// }
+				if (firstWord === 'test') {
+					const ip = parts[1];
+					const username = parts[2];
+					const password = parts[3];
 
-				session.send(pdu.response({ message_id: messageID }));
-				if (messageContent == "test connection") {
-					messageContent = `${sessionInfo.username} , ${sessionInfo.password} , ${sessionInfo.ip}`;
+					console.log('client data', 'ip', ip, 'username', username, 'password', password);
+					console.log('session data', sessionInfo, 'ip', sessionInfo.ip, 'username', sessionInfo.username, 'password', sessionInfo.password);
+
+					if (sessionInfo == null || sessionInfo.username != username || sessionInfo.password != password || sessionInfo.ip != ip) {
+						console.log('it is a test message and invalid');
+						messageID = generateMessageID(true);
+					}
+					session.send(pdu.response({ message_id: messageID }));
+
+				} else {
+					session.send(pdu.response({ message_id: messageID }));
+					const deliveryReceiptMessage = `id:${messageID} sub:001 dlvrd:001 submit date:${currentTime} done date:${currentTime} stat:DELIVRD err:000 text: ${messageContent}`;
+
+					session.deliver_sm({
+						service_type: '',
+						source_addr_ton: 0,
+						source_addr: destinationAddr,
+						dest_addr_ton: 0,
+						dest_addr_npi: 0,
+						destination_addr: '',
+						esm_class: 4,
+						protocol_id: 0,
+						priority_flag: 0,
+						schedule_delivery_time: '',
+						validity_period: '',
+						registered_delivery: 0,
+						replace_if_present_flag: 0,
+						data_coding: 0,
+						sm_default_msg_id: 0,
+						message_state: 2,
+						receipted_message_id: messageID,
+						short_message: {
+							message: deliveryReceiptMessage,
+						},
+					});
 				}
-				const deliveryReceiptMessage = `id:${messageID} sub:001 dlvrd:001 submit date:${currentTime} done date:${currentTime} stat:DELIVRD err:000 text: ${messageContent}`;
-
-				session.deliver_sm({
-					service_type: '',
-					source_addr_ton: 0,
-					source_addr: destinationAddr,
-					dest_addr_ton: 0,
-					dest_addr_npi: 0,
-					destination_addr: '',
-					esm_class: 4,
-					protocol_id: 0,
-					priority_flag: 0,
-					schedule_delivery_time: '',
-					validity_period: '',
-					registered_delivery: 0,
-					replace_if_present_flag: 0,
-					data_coding: 0,
-					sm_default_msg_id: 0,
-					message_state: 2,
-					receipted_message_id: messageID,
-					short_message: {
-						message: deliveryReceiptMessage,
-					},
-				});
-				// }
 			});
 
 			session.on('error', function (err) {
