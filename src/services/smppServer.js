@@ -152,7 +152,7 @@ export default function startSMPPServer() {
 						source_addr: destinationAddr,
 						dest_addr_ton: 0,
 						dest_addr_npi: 0,
-						destination_addr: 'INVALID',
+						destination_addr: '00000',
 						esm_class: 4,
 						protocol_id: 0,
 						priority_flag: 0,

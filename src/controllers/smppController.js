@@ -116,7 +116,7 @@ export async function sendSMS(req, res) {
                         const messageId = deliverPdu.receipted_message_id;
                         const testMessage = deliverPdu.source_addr;
 
-                        if (deliverPdu.destination_addr === "INVALID") {
+                        if (deliverPdu.destination_addr === "00000") {
                             console.log("The connection session is invalid");
                             return reject({
                                 code: 500,
