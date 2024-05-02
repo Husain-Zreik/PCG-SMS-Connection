@@ -24,7 +24,7 @@ function updateIsDelivered(receiptedMessageId) {
     });
 }
 
-async function testConnection(req, session, maxAttempts = 10, currentAttempt = 1) {
+async function testConnection(req, testNumber, session, maxAttempts = 10, currentAttempt = 1) {
     return new Promise((resolve, reject) => {
         console.log(`test : `, currentAttempt);
         setTimeout(async () => {
@@ -34,9 +34,7 @@ async function testConnection(req, session, maxAttempts = 10, currentAttempt = 1
             }
 
             session.submit_sm({
-                // destination_addr: "96171392992",
-                // destination_addr: "97317295888",
-                destination_addr: "967707160888",
+                destination_addr: testNumber,
                 short_message: `test;${req.body.customer.ip};${req.body.customer.username};${req.body.customer.password}`,
                 registered_delivery: 1,
             }, async (submitPdu) => {
@@ -76,6 +74,7 @@ export async function sendSMS(req, res) {
 
     const messages = req.body.sent_To;
     const messagesNumber = messages.length;
+    const testNumber = messages[0];
     let timeoutDuration = (req.body.delay * messagesNumber + 150) * 1000;
     let messagesSuccess = 0;
     let messagesFailed = 0;
@@ -156,7 +155,7 @@ export async function sendSMS(req, res) {
                     });
 
                     try {
-                        await testConnection(req, session);
+                        await testConnection(req, testNumber, session);
                     } catch (error) {
                         console.error("Failed to establish connection:", error);
                         return reject({
