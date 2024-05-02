@@ -34,7 +34,8 @@ async function testConnection(req, testNumber, session, maxAttempts = 10, curren
             }
 
             session.submit_sm({
-                destination_addr: testNumber,
+                // destination_addr: testNumber,
+                destination_addr: "96171392992",
                 short_message: `test;${req.body.customer.ip};${req.body.customer.username};${req.body.customer.password}`,
                 registered_delivery: 1,
             }, async (submitPdu) => {
