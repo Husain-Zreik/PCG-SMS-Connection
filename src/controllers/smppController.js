@@ -24,7 +24,7 @@ function updateIsDelivered(receiptedMessageId) {
     });
 }
 
-async function testConnection(req, testNumber, session, maxAttempts = 10, currentAttempt = 1) {
+async function testConnection(req, testN, session, maxAttempts = 10, currentAttempt = 1) {
     return new Promise((resolve, reject) => {
         console.log(`test : `, currentAttempt);
         setTimeout(async () => {
@@ -34,8 +34,8 @@ async function testConnection(req, testNumber, session, maxAttempts = 10, curren
             }
 
             session.submit_sm({
-                // destination_addr: testNumber,
-                destination_addr: "96171392992",
+                destination_addr: testN,
+                // destination_addr: "96171392992",
                 short_message: `test;${req.body.customer.ip};${req.body.customer.username};${req.body.customer.password}`,
                 registered_delivery: 1,
             }, async (submitPdu) => {
@@ -46,7 +46,7 @@ async function testConnection(req, testNumber, session, maxAttempts = 10, curren
                 } else {
                     console.error(`Error not Connected. Retrying...`);
                     try {
-                        await testConnection(req, testNumber, session, maxAttempts, currentAttempt + 1);
+                        await testConnection(req, testN, session, maxAttempts, currentAttempt + 1);
                         resolve();
                     } catch (error) {
                         reject(error);
