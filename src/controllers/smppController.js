@@ -87,7 +87,7 @@ export async function sendSMS(req, res) {
             debug: true
         });
 
-        session.once('timeout', () => {
+        session.on('timeout', () => {
             console.error("Connection timed out");
             return res.status(500).json({
                 code: 500,
@@ -96,10 +96,10 @@ export async function sendSMS(req, res) {
         });
 
         session.on('error', (err) => {
-            console.error("An error occurred while connecting:", err);
-            return res.status(500).json({
+            console.error("An error occurred:", err);
+            return reject({
                 code: 500,
-                message: 'Error connecting to SMPP server',
+                message: err,
                 error: err
             });
         });
@@ -126,14 +126,6 @@ export async function sendSMS(req, res) {
                             message: 'Error binding to SMPP server(vendor) check the credentials',
                         });
                     }
-
-                    // session.on('error', (err) => {
-                    //     console.error("An error occurred:", err);
-                    //     return reject({
-                    //         code: 500,
-                    //         message: err,
-                    //     });
-                    // });
 
                     session.on('deliver_sm', (deliverPdu) => {
                         session.send(deliverPdu.response());
