@@ -96,12 +96,10 @@ export async function sendSMS(req, res) {
         });
 
         session.on('error', (err) => {
-            console.error("An error occurred 11:", err.message);
-
             console.error("An error occurred:", err);
             return res.status(500).json({
                 code: 500,
-                message: 'Error connecting to SMPP server',
+                message: err.message,
                 error: err
             });
         });
