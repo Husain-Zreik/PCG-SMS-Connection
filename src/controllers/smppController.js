@@ -75,7 +75,7 @@ export async function sendSMS(req, res) {
 
     const messages = req.body.sent_To;
     const messagesNumber = messages.length;
-    const testNumber = messages[0];
+    const testNumber = messages[0].number;
     let timeoutDuration = (req.body.delay * messagesNumber + 150) * 1000;
     let messagesSuccess = 0;
     let messagesFailed = 0;
