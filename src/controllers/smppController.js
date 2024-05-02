@@ -87,7 +87,7 @@ export async function sendSMS(req, res) {
             debug: true
         });
 
-        session.on('timeout', () => {
+        session.once('timeout', () => {
             console.error("Connection timed out");
             return res.status(500).json({
                 code: 500,
@@ -96,10 +96,12 @@ export async function sendSMS(req, res) {
         });
 
         session.on('error', (err) => {
+            console.error("An error occurred 11:", err.message);
+
             console.error("An error occurred:", err);
             return res.status(500).json({
                 code: 500,
-                message: err,
+                message: 'Error connecting to SMPP server',
                 error: err
             });
         });
