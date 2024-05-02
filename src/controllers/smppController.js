@@ -87,6 +87,32 @@ export async function sendSMS(req, res) {
             debug: true
         });
 
+        session.on('error', (err) => {
+            console.error("An error occurred while connecting:", err);
+            return res.status(500).json({
+                code: 500,
+                message: 'Error connecting to SMPP server',
+                error: err
+            });
+        });
+
+        session.once('timeout', () => {
+            console.error("Connection timed out");
+            return res.status(500).json({
+                code: 500,
+                message: 'Connection to SMPP server timed out'
+            });
+        });
+
+        session.once('uncaughtException', (err) => {
+            console.error("An uncaught exception occurred:", err);
+            return res.status(500).json({
+                code: 500,
+                message: 'An unexpected error occurred',
+                error: err
+            });
+        });
+
         await new Promise((resolve, reject) => {
             session.on('connect', () => {
                 session.bind_transceiver({
@@ -101,13 +127,13 @@ export async function sendSMS(req, res) {
                         });
                     }
 
-                    session.on('error', (err) => {
-                        console.error("An error occurred:", err);
-                        return reject({
-                            code: 500,
-                            message: err,
-                        });
-                    });
+                    // session.on('error', (err) => {
+                    //     console.error("An error occurred:", err);
+                    //     return reject({
+                    //         code: 500,
+                    //         message: err,
+                    //     });
+                    // });
 
                     session.on('deliver_sm', (deliverPdu) => {
                         session.send(deliverPdu.response());
