@@ -182,6 +182,18 @@ export async function sendSMS(req, res) {
                                     if (i === messagesNumber - 1) {
                                         sentMessages = messagesSuccess + messagesFailed;
                                     }
+
+                                    if (deliveredMessages === sentMessages) {
+                                        console.log('All deliveries received, closing connection...');
+                                        clearTimeout(timeout);
+                                        resolve({
+                                            code: 200,
+                                            total: messagesNumber,
+                                            sent: sentMessages,
+                                            delivered: deliveredMessages,
+                                            message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesNumber} messages delivered successfully.`
+                                        });
+                                    }
                                     innerResolve();
                                 });
                             }, req.body.delay * 1000);
