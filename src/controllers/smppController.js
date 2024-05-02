@@ -76,6 +76,7 @@ export async function sendSMS(req, res) {
     const messagesNumber = messages.length;
     let timeoutDuration = (req.body.delay * messagesNumber + 150) * 1000;
     let messagesSuccess = 0;
+    let messagesFailed = 0;
     let sentMessages = -1;
     let deliveredMessages = 0;
 
@@ -172,13 +173,14 @@ export async function sendSMS(req, res) {
                                         updateStatus(message.id, 'sent', submitPdu.message_id);
                                         messagesSuccess++;
                                         console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
-                                        if (i === messagesNumber - 1) {
-                                            sentMessages = messagesSuccess;
-                                        }
-
                                     } else {
                                         console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
+                                        messagesFailed++;
                                         updateStatus(message.id, 'failed', submitPdu.message_id);
+                                    }
+
+                                    if (i === messagesNumber - 1) {
+                                        sentMessages = messagesSuccess + messagesFailed;
                                     }
                                     innerResolve();
                                 });
