@@ -97,7 +97,7 @@ export async function sendSMS(req, res) {
 
         session.on('error', (err) => {
             console.error("An error occurred:", err);
-            return reject({
+            return res.status(500).json({
                 code: 500,
                 message: err,
                 error: err
