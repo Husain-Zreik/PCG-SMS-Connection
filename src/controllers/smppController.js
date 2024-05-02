@@ -128,9 +128,9 @@ export async function sendSMS(req, res) {
                             resolve({
                                 code: 200,
                                 total: messagesNumber,
-                                sent: sentMessages,
+                                sent: messagesSuccess,
                                 delivered: deliveredMessages,
-                                message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesNumber} messages delivered successfully.`
+                                message: `${messagesSuccess} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
                             });
                         }
                     });
@@ -151,9 +151,9 @@ export async function sendSMS(req, res) {
                             code: 500,
                             message: 'Request time out and not all messages have been delivered',
                             total: messagesNumber,
-                            sent: sentMessages + 1,
+                            sent: messagesSuccess,
                             delivered: deliveredMessages,
-                            info_message: `${sentMessages + 1} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
+                            info_message: `${messagesSuccess} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
                         });
                     }, timeoutDuration);
 
@@ -182,7 +182,6 @@ export async function sendSMS(req, res) {
                                         updateStatus(message.id, 'failed', submitPdu.message_id);
                                     }
 
-                                    console.log("Not in the last iteration");
                                     if (i === messagesNumber - 1) {
                                         console.log("in the last iteration");
                                         sentMessages = messagesSuccess + messagesFailed;
@@ -192,9 +191,9 @@ export async function sendSMS(req, res) {
                                             resolve({
                                                 code: 200,
                                                 total: messagesNumber,
-                                                sent: sentMessages,
+                                                sent: messagesSuccess,
                                                 delivered: deliveredMessages,
-                                                message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesNumber} messages delivered successfully.`
+                                                message: `${messagesSuccess} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
                                             });
                                         }
                                     }
