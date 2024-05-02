@@ -159,6 +159,7 @@ export async function sendSMS(req, res) {
 
                     for (let i = 0; i < messagesNumber; i++) {
                         const message = messages[i];
+                        let isSent;
                         await new Promise((innerResolve) => {
                             setTimeout(() => {
                                 session.submit_sm({
@@ -172,28 +173,32 @@ export async function sendSMS(req, res) {
                                         console.log(`Successful Message ID for ${message.number}:`, submitPdu.message_id);
                                         updateStatus(message.id, 'sent', submitPdu.message_id);
                                         messagesSuccess++;
+                                        isSent = 1;
                                         console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
                                     } else {
                                         console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
                                         messagesFailed++;
+                                        isSent = 0;
                                         updateStatus(message.id, 'failed', submitPdu.message_id);
                                     }
 
+                                    console.log("Not in the last iteration");
                                     if (i === messagesNumber - 1) {
+                                        console.log("in the last iteration");
                                         sentMessages = messagesSuccess + messagesFailed;
+                                        if (!isSent) {
+                                            console.log('All deliveries received, closing connection...');
+                                            clearTimeout(timeout);
+                                            resolve({
+                                                code: 200,
+                                                total: messagesNumber,
+                                                sent: sentMessages,
+                                                delivered: deliveredMessages,
+                                                message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesNumber} messages delivered successfully.`
+                                            });
+                                        }
                                     }
 
-                                    if (deliveredMessages === sentMessages) {
-                                        console.log('All deliveries received, closing connection...');
-                                        clearTimeout(timeout);
-                                        resolve({
-                                            code: 200,
-                                            total: messagesNumber,
-                                            sent: sentMessages,
-                                            delivered: deliveredMessages,
-                                            message: `${sentMessages} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesNumber} messages delivered successfully.`
-                                        });
-                                    }
                                     innerResolve();
                                 });
                             }, req.body.delay * 1000);
