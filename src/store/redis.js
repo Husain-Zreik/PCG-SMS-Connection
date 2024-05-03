@@ -1,4 +1,4 @@
-import { redisClient } from "../..";
+import { redisClient } from "../../index.js";
 
 function storeStateData(key, stateData) {
     redisClient.exists(key, (err, exists) => {

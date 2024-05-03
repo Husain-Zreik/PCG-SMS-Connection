@@ -3,6 +3,7 @@ import connection from './config/dbConnection.js';
 import smsRouter from './src/routes/smsRoutes.js';
 import bodyParser from 'body-parser';
 import express from 'express';
+import redis from 'redis';
 import cors from 'cors';
 import http from 'http';
 // import pm2 from 'pm2';
