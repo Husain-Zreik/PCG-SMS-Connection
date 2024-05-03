@@ -56,7 +56,11 @@ function decryptCustomerInfo(encryptedCustomerInfo, key) {
 }
 
 function decryptMessage(encryptedMessage, key) {
-	const [encrypted, iv] = encryptedMessage.split(':');
+	// Extract IV and encrypted data based on fixed lengths
+	const ivLength = 32; // Length of IV in hexadecimal representation
+	const iv = encryptedMessage.slice(0, ivLength);
+	const encrypted = encryptedMessage.slice(ivLength + 1); // Skip the colon
+
 	const algorithm = 'aes-256-cbc';
 
 	const decipher = crypto.createDecipheriv(algorithm, Buffer.from(key, 'hex'), Buffer.from(iv, 'hex'));
@@ -65,8 +69,6 @@ function decryptMessage(encryptedMessage, key) {
 
 	return decrypted.toString('utf-8');
 }
-
-
 
 export default function startSMPPServer() {
 
