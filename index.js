@@ -27,7 +27,7 @@ server.listen(port, ipAddress, (err) => {
     startSMPPServer();
 });
 
-export const redisClient = redis.createClient({
+const redisClient = redis.createClient({
     host: '127.0.0.1',
     port: 6379,
 });
@@ -65,3 +65,5 @@ process.on('SIGINT', () => {
 //     const stateData = deserializeState(storedStateData);
 //     resumeProcesses(stateData);
 // });
+
+export { redisClient }
