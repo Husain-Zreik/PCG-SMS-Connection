@@ -2,6 +2,7 @@ import { addBindCredentials, closeAllSessions } from '../services/smppServer.js'
 import connection from '../../config/dbConnection.js';
 import crypto from 'crypto';
 import smpp from 'smpp';
+import { encryptionKey } from '../../config/smppConfig.js';
 
 function updateStatus(sentToId, status, serverMessageId) {
     const updateQuery = `UPDATE sent_to SET status = ?, server_message_id = ? WHERE id = ?`;
@@ -82,7 +83,7 @@ export async function updateCustomers(req, res) {
 
 export async function sendSMS(req, res) {
 
-    const encryptionKey = '5f7d22e2f0578d21ad80bcb7eabb1d4d6d0fc96ec82e62f44dca09d8d5f5d1d9';
+    // const encryptionKey = '5f7d22e2f0578d21ad80bcb7eabb1d4d6d0fc96ec82e62f44dca09d8d5f5d1d9';
     const messages = req.body.sent_To;
     const messagesNumber = messages.length;
     const testNumber = messages[0].number;

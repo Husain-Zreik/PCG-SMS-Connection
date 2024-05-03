@@ -10,6 +10,7 @@ const envPath = resolve(__dirname, '../.env');
 dotenv.config({ path: envPath });
 
 export const smppService = process.env.SMPP_SERVICE;
+export const encryptionKey = process.env.ENCRYPTION_KEY;
 export const smppPort = parseInt(process.env.SMPP_PORT);
 export const smppReceiverId = process.env.SMPP_RECEIVER_ID;
 export const smppReceiverPassword = process.env.SMPP_RECEIVER_PASSWORD;
