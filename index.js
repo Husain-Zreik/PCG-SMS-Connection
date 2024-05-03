@@ -30,6 +30,9 @@ server.listen(port, ipAddress, (err) => {
 const redisClient = redis.createClient({
     host: '127.0.0.1',
     port: 6379,
+    enable_offline_queue: false, // Disable offline queue (useful for debugging)
+    enableReadyCheck: true, // Enable the client to check if Redis is ready
+    debug_mode: true // Enable debug mode
 });
 
 redisClient.on('connect', () => {
