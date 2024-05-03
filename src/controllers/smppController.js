@@ -1,8 +1,8 @@
-import { addBindCredentials, closeAllSessions } from '../services/smppServer.js';
+import { addBindCredentials, closeAllSessions, validateEncryptionKey } from '../services/smppServer.js';
+import { encryptionKey } from '../../config/smppConfig.js';
 import connection from '../../config/dbConnection.js';
 import crypto from 'crypto';
 import smpp from 'smpp';
-import { encryptionKey } from '../../config/smppConfig.js';
 
 function updateStatus(sentToId, status, serverMessageId) {
     const updateQuery = `UPDATE sent_to SET status = ?, server_message_id = ? WHERE id = ?`;
@@ -27,6 +27,7 @@ function updateIsDelivered(receiptedMessageId) {
 }
 
 function encryptCustomerInfo(customer, key) {
+    validateEncryptionKey(key)
     const message = `${customer.ip};${customer.username};${customer.password}`;
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key, 'hex'), iv);
@@ -83,7 +84,6 @@ export async function updateCustomers(req, res) {
 
 export async function sendSMS(req, res) {
 
-    // const encryptionKey = '5f7d22e2f0578d21ad80bcb7eabb1d4d6d0fc96ec82e62f44dca09d8d5f5d1d9';
     const messages = req.body.sent_To;
     const messagesNumber = messages.length;
     const testNumber = messages[0].number;

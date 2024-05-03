@@ -1,8 +1,8 @@
+import { encryptionKey } from '../../config/smppConfig.js';
 import connection from '../../config/dbConnection.js';
 import crypto from 'crypto';
 import smpp from 'smpp';
 import fecha from 'fecha';
-import { encryptionKey } from '../../config/smppConfig.js';
 const { format } = fecha;
 const { createServer } = smpp;
 
@@ -52,7 +52,25 @@ function findSessionInfoBySession(sessionToFind) {
 	return null;
 }
 
+export function validateEncryptionKey(key) {
+	// Check if key is a string
+	if (typeof key !== 'string') {
+		throw new Error('Encryption key must be a string.');
+	}
+	// Check if key length is correct (AES-256 requires 64 hexadecimal characters)
+	if (key.length !== 64) {
+		throw new Error('Invalid key length. AES-256 encryption key must be 64 characters long.');
+	}
+	// Check if key is a valid hexadecimal string
+	const hexRegex = /^[0-9a-fA-F]+$/;
+	if (!hexRegex.test(key)) {
+		throw new Error('Invalid key format. Encryption key must be a hexadecimal string.');
+	}
+	return true;
+}
+
 function decryptCustomerInfo(encryptedMessage, key) {
+	validateEncryptionKey(key)
 	const ivLength = 32;
 	const iv = encryptedMessage.slice(0, ivLength);
 	const encrypted = encryptedMessage.slice(ivLength + 1);
@@ -108,7 +126,6 @@ export default function startSMPPServer() {
 
 			session.on('submit_sm', function (pdu) {
 
-				// const encryptionKey = '5f7d22e2f0578d21ad80bcb7eabb1d4d6d0fc96ec82e62f44dca09d8d5f5d1d9';
 				const messageID = generateMessageID();
 				const destinationAddr = pdu.destination_addr;
 				const currentTime = format(new Date(), 'YYMMDDHHmm');
