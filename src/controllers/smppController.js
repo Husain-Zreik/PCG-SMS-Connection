@@ -3,7 +3,7 @@ import { encryptionKey } from '../../config/smppConfig.js';
 import connection from '../../config/dbConnection.js';
 import crypto from 'crypto';
 import smpp from 'smpp';
-import { deserializeState, removeStateData, retrieveStateData, serializeState, storeStateData } from '../store/redis.js';
+import { deserializeState, removeStateData, retrieveStateData, storeStateData } from '../store/redis.js';
 
 function updateStatus(sentToId, status, serverMessageId) {
     const updateQuery = `UPDATE sent_to SET status = ?, server_message_id = ? WHERE id = ?`;
