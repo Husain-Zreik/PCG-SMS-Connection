@@ -1,6 +1,4 @@
-import redis from 'redis';
-
-const redisClient = redis.createClient();
+import { redisClient } from '../..';
 
 function storeStateData(key, stateData) {
     redisClient.exists(key, (err, exists) => {
