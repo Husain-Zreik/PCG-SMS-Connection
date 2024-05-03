@@ -34,7 +34,7 @@ function encryptCustomerInfo(customer, key) {
     return `${iv.toString('hex')}:${encrypted}`;
 }
 
-async function testConnection(req, key, testN, session, maxAttempts = 10, currentAttempt = 1) {
+async function testConnection(req, encryptedCustomerInfo, testN, session, maxAttempts = 10, currentAttempt = 1) {
     return new Promise((resolve, reject) => {
         console.log(`test : `, currentAttempt);
         setTimeout(async () => {
@@ -43,12 +43,8 @@ async function testConnection(req, key, testN, session, maxAttempts = 10, curren
                 return;
             }
 
-            const encryptedCustomerInfo = encryptCustomerInfo(req.body.customer, key);
-            console.log('encryptedCustomerInfo : ', encryptedCustomerInfo);
-
             session.submit_sm({
                 destination_addr: testN,
-                // short_message: `test;${req.body.customer.ip};${req.body.customer.username};${req.body.customer.password}`,
                 short_message: `test;${encryptedCustomerInfo}`,
                 registered_delivery: 1,
             }, async (submitPdu) => {
@@ -59,7 +55,7 @@ async function testConnection(req, key, testN, session, maxAttempts = 10, curren
                 } else {
                     console.error(`Error not Connected. Retrying...`);
                     try {
-                        await testConnection(req, key, testN, session, maxAttempts, currentAttempt + 1);
+                        await testConnection(req, encryptedCustomerInfo, testN, session, maxAttempts, currentAttempt + 1);
                         resolve();
                     } catch (error) {
                         reject(error);
@@ -170,7 +166,8 @@ export async function sendSMS(req, res) {
                     });
 
                     try {
-                        await testConnection(req, encryptionKey, testNumber, session);
+                        const encryptedCustomerInfo = encryptCustomerInfo(req.body.customer, encryptionKey);
+                        await testConnection(req, encryptedCustomerInfo, testNumber, session);
                     } catch (error) {
                         console.error("Failed to establish connection:", error);
                         return reject({
