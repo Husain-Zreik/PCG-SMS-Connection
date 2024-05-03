@@ -3,8 +3,6 @@ import { encryptionKey } from '../../config/smppConfig.js';
 import connection from '../../config/dbConnection.js';
 import crypto from 'crypto';
 import smpp from 'smpp';
-import { deserializeState, removeStateData, retrieveStateData, storeStateData } from '../store/redis.js';
-import { redisClient } from '../../index.js';
 
 function updateStatus(sentToId, status, serverMessageId) {
     const updateQuery = `UPDATE sent_to SET status = ?, server_message_id = ? WHERE id = ?`;
@@ -181,32 +179,6 @@ export async function sendSMS(req, res) {
                         });
                     }
 
-                    // const sessionData = {
-                    //     user_id: user_id,
-                    //     messages: messages,
-                    //     messagesNumber: messagesNumber,
-                    //     testNumber: testNumber,
-                    //     timeoutDuration: timeoutDuration,
-                    //     messagesSuccess: messagesSuccess,
-                    //     messagesFailed: messagesFailed,
-                    //     sentMessages: sentMessages,
-                    //     deliveredMessages: deliveredMessages
-                    // };
-
-
-                    // storeStateData(req.body.user_id, req.body);
-                    redisClient.set(req.body.user_id, JSON.stringify(req.body))
-
-                    // retrieveStateData(req.body.user_id, (stateData) => {
-                    //     if (stateData) {
-                    //         const deserializedData = deserializeState(stateData);
-                    //         console.log('Retrieved state data:', deserializedData);
-                    //     } else {
-                    //         console.log('State data not found or error occurred while retrieving');
-                    //     }
-                    // });
-
-
                     const timeout = setTimeout(() => {
                         console.log('Timeout reached, closing connection...');
                         return resolve({
@@ -281,12 +253,10 @@ export async function sendSMS(req, res) {
             });
         }).then(result => {
             console.log('Resolved:', result);
-            // removeStateData(req.body.user_id)
             res.status(200).json(result);
         })
             .catch(error => {
                 console.error('Rejected:', error);
-                // removeStateData(req.body.user_id)
                 res.status(500).json(error);
             });
     } catch (error) {

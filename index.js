@@ -3,10 +3,8 @@ import connection from './config/dbConnection.js';
 import smsRouter from './src/routes/smsRoutes.js';
 import bodyParser from 'body-parser';
 import express from 'express';
-import redis from 'redis';
 import cors from 'cors';
 import http from 'http';
-// import pm2 from 'pm2';
 
 const ipAddress = process.env.NODE_HOST;
 const port = process.env.NODE_PORT;
@@ -27,22 +25,6 @@ server.listen(port, ipAddress, (err) => {
     startSMPPServer();
 });
 
-const redisClient = redis.createClient({
-    host: '127.0.0.1',
-    port: 6379,
-    enable_offline_queue: false, // Disable offline queue (useful for debugging)
-    enableReadyCheck: true, // Enable the client to check if Redis is ready
-    debug_mode: true // Enable debug mode
-});
-
-redisClient.on('connect', () => {
-    console.log('Connected to Redis');
-});
-
-redisClient.on('error', (err) => {
-    console.error('Redis error:', err);
-});
-
 connection.connect((err) => {
     if (err) {
         console.error('Error connecting to MySQL database:', err);
@@ -61,12 +43,3 @@ process.on('SIGINT', () => {
         process.exit(0);
     });
 });
-
-// PM2 Restart Event (Restore state data and resume processes)
-// pm2.on('restart', () => {
-//     const storedStateData = retrieveStateData();
-//     const stateData = deserializeState(storedStateData);
-//     resumeProcesses(stateData);
-// });
-
-export { redisClient }
