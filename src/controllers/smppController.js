@@ -26,12 +26,7 @@ function updateIsDelivered(receiptedMessageId) {
 }
 
 function encryptCustomerInfo(customer, key) {
-    const customerInfo = `${customer.ip};${customer.username};${customer.password}`;
-    const encryptedCustomerInfo = encryptMessage(customerInfo, key);
-    return encryptedCustomerInfo;
-}
-
-function encryptMessage(message, key) {
+    const message = `${customer.ip};${customer.username};${customer.password}`;
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key, 'hex'), iv);
     let encrypted = cipher.update(message, 'utf-8', 'hex');

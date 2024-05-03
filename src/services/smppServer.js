@@ -51,22 +51,14 @@ function findSessionInfoBySession(sessionToFind) {
 	return null;
 }
 
-function decryptCustomerInfo(encryptedCustomerInfo, key) {
-	return decryptMessage(encryptedCustomerInfo, key);
-}
-
-function decryptMessage(encryptedMessage, key) {
-	// Extract IV and encrypted data based on fixed lengths
-	const ivLength = 32; // Length of IV in hexadecimal representation
+function decryptCustomerInfo(encryptedMessage, key) {
+	const ivLength = 32;
 	const iv = encryptedMessage.slice(0, ivLength);
-	const encrypted = encryptedMessage.slice(ivLength + 1); // Skip the colon
-
+	const encrypted = encryptedMessage.slice(ivLength + 1);
 	const algorithm = 'aes-256-cbc';
-
 	const decipher = crypto.createDecipheriv(algorithm, Buffer.from(key, 'hex'), Buffer.from(iv, 'hex'));
 	let decrypted = decipher.update(Buffer.from(encrypted, 'hex'));
 	decrypted = Buffer.concat([decrypted, decipher.final()]);
-
 	return decrypted.toString('utf-8');
 }
 
