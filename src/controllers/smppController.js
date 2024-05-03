@@ -25,9 +25,9 @@ function updateIsDelivered(receiptedMessageId) {
     });
 }
 
-function encryptCustomerInfo(customer) {
+function encryptCustomerInfo(customer, key) {
     const customerInfo = `${customer.ip};${customer.username};${customer.password}`;
-    const encryptedCustomerInfo = encryptMessage(customerInfo);
+    const encryptedCustomerInfo = encryptMessage(customerInfo, key);
     return encryptedCustomerInfo;
 }
 
@@ -39,7 +39,7 @@ function encryptMessage(message, key) {
     return `${iv.toString('hex')}:${encrypted}`;
 }
 
-async function testConnection(req, testN, session, maxAttempts = 10, currentAttempt = 1) {
+async function testConnection(req, key, testN, session, maxAttempts = 10, currentAttempt = 1) {
     return new Promise((resolve, reject) => {
         console.log(`test : `, currentAttempt);
         setTimeout(async () => {
@@ -48,7 +48,7 @@ async function testConnection(req, testN, session, maxAttempts = 10, currentAtte
                 return;
             }
 
-            const encryptedCustomerInfo = encryptCustomerInfo(req.body.customer);
+            const encryptedCustomerInfo = encryptCustomerInfo(req.body.customer, key);
             console.log('encryptedCustomerInfo : ', encryptedCustomerInfo);
 
             session.submit_sm({
@@ -64,7 +64,7 @@ async function testConnection(req, testN, session, maxAttempts = 10, currentAtte
                 } else {
                     console.error(`Error not Connected. Retrying...`);
                     try {
-                        await testConnection(req, testN, session, maxAttempts, currentAttempt + 1);
+                        await testConnection(req, key, testN, session, maxAttempts, currentAttempt + 1);
                         resolve();
                     } catch (error) {
                         reject(error);
@@ -91,6 +91,7 @@ export async function updateCustomers(req, res) {
 
 export async function sendSMS(req, res) {
 
+    const encryptionKey = 'hello';
     const messages = req.body.sent_To;
     const messagesNumber = messages.length;
     const testNumber = messages[0].number;
@@ -174,7 +175,7 @@ export async function sendSMS(req, res) {
                     });
 
                     try {
-                        await testConnection(req, testNumber, session);
+                        await testConnection(req, encryptionKey, testNumber, session);
                     } catch (error) {
                         console.error("Failed to establish connection:", error);
                         return reject({

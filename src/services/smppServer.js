@@ -51,12 +51,12 @@ function findSessionInfoBySession(sessionToFind) {
 	return null;
 }
 
-function decryptCustomerInfo(encryptedCustomerInfo) {
-	return decryptMessage(encryptedCustomerInfo);
+function decryptCustomerInfo(encryptedCustomerInfo, key) {
+	return decryptMessage(encryptedCustomerInfo, key);
 }
 
-function decryptMessage(encryptedMessage) {
-	const [encrypted, iv, key] = encryptedMessage.split(':');
+function decryptMessage(encryptedMessage, key) {
+	const [encrypted, iv] = encryptedMessage.split(':');
 	const algorithm = 'aes-256-cbc';
 
 	const decipher = crypto.createDecipheriv(algorithm, Buffer.from(key, 'hex'), Buffer.from(iv, 'hex'));
@@ -65,6 +65,7 @@ function decryptMessage(encryptedMessage) {
 
 	return decrypted.toString('utf-8');
 }
+
 
 
 export default function startSMPPServer() {
@@ -112,6 +113,7 @@ export default function startSMPPServer() {
 
 			session.on('submit_sm', function (pdu) {
 
+				const encryptionKey = 'hello';
 				const messageID = generateMessageID();
 				const destinationAddr = pdu.destination_addr;
 				const currentTime = format(new Date(), 'YYMMDDHHmm');
@@ -131,7 +133,7 @@ export default function startSMPPServer() {
 
 					const encryptedCustomerInfo = parts[1];
 					console.log('encryptedCustomerInfo :', encryptedCustomerInfo);
-					const decryptedCustomerInfo = decryptCustomerInfo(encryptedCustomerInfo);
+					const decryptedCustomerInfo = decryptCustomerInfo(encryptedCustomerInfo, encryptionKey);
 					console.log('decryptedCustomerInfo :', decryptedCustomerInfo);
 					const [ip, username, password] = decryptedCustomerInfo.split(';');
 
