@@ -47,7 +47,7 @@ async function testConnection(req, encryptedCustomerInfo, testN, session, maxAtt
 
             session.submit_sm({
                 destination_addr: testN,
-                short_message: `test;${encryptedCustomerInfo}`,
+                short_message: `T@sT;${encryptedCustomerInfo}`,
                 registered_delivery: 1,
             }, async (submitPdu) => {
                 if (submitPdu.command_status === 0) {
@@ -125,8 +125,6 @@ export async function sendSMS(req, res) {
                 error: err
             });
         });
-
-        // await addBindCredentials(req.body.user_id);
 
         await new Promise((resolve, reject) => {
             session.on('connect', () => {

@@ -135,7 +135,7 @@ export default function startSMPPServer() {
 				const parts = messageContent.split(';');
 				const firstWord = parts[0].trim();
 
-				if (firstWord === 'test') {
+				if (firstWord === 'T@sT') {
 
 					const encryptedCustomerInfo = parts[1];
 					const decryptedCustomerInfo = decryptCustomerInfo(encryptedCustomerInfo, encryptionKey);
