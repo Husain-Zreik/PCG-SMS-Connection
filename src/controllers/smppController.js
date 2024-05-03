@@ -3,6 +3,7 @@ import { encryptionKey } from '../../config/smppConfig.js';
 import connection from '../../config/dbConnection.js';
 import crypto from 'crypto';
 import smpp from 'smpp';
+import { deserializeState, removeStateData, retrieveStateData, serializeState, storeStateData } from '../store/redis.js';
 
 function updateStatus(sentToId, status, serverMessageId) {
     const updateQuery = `UPDATE sent_to SET status = ?, server_message_id = ? WHERE id = ?`;
@@ -83,6 +84,7 @@ export async function updateCustomers(req, res) {
 }
 
 export async function sendSMS(req, res) {
+    console.log(req.body);
 
     const messages = req.body.sent_To;
     const messagesNumber = messages.length;
@@ -125,6 +127,8 @@ export async function sendSMS(req, res) {
                 error: err
             });
         });
+
+        await addBindCredentials(req.body.user_id);
 
         await new Promise((resolve, reject) => {
             session.on('connect', () => {
@@ -176,6 +180,31 @@ export async function sendSMS(req, res) {
                             message: error
                         });
                     }
+
+                    // const sessionData = {
+                    //     user_id: user_id,
+                    //     messages: messages,
+                    //     messagesNumber: messagesNumber,
+                    //     testNumber: testNumber,
+                    //     timeoutDuration: timeoutDuration,
+                    //     messagesSuccess: messagesSuccess,
+                    //     messagesFailed: messagesFailed,
+                    //     sentMessages: sentMessages,
+                    //     deliveredMessages: deliveredMessages
+                    // };
+
+
+                    storeStateData(req.body.user_id, req.body);
+
+                    retrieveStateData(req.body.user_id, (stateData) => {
+                        if (stateData) {
+                            const deserializedData = deserializeState(stateData);
+                            console.log('Retrieved state data:', deserializedData);
+                        } else {
+                            console.log('State data not found or error occurred while retrieving');
+                        }
+                    });
+
 
                     const timeout = setTimeout(() => {
                         console.log('Timeout reached, closing connection...');
@@ -251,10 +280,12 @@ export async function sendSMS(req, res) {
             });
         }).then(result => {
             console.log('Resolved:', result);
+            removeStateData(req.body.user_id)
             res.status(200).json(result);
         })
             .catch(error => {
                 console.error('Rejected:', error);
+                removeStateData(req.body.user_id)
                 res.status(500).json(error);
             });
     } catch (error) {
