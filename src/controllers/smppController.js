@@ -281,12 +281,12 @@ export async function sendSMS(req, res) {
             });
         }).then(result => {
             console.log('Resolved:', result);
-            removeStateData(req.body.user_id)
+            // removeStateData(req.body.user_id)
             res.status(200).json(result);
         })
             .catch(error => {
                 console.error('Rejected:', error);
-                removeStateData(req.body.user_id)
+                // removeStateData(req.body.user_id)
                 res.status(500).json(error);
             });
     } catch (error) {
