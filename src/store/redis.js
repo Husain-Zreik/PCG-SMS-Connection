@@ -1,10 +1,4 @@
-import redis from 'redis';
-
-export const redisClient = redis.createClient({
-    host: '127.0.0.1', // Redis server host
-    port: 6379, // Redis server port
-    // Add more configuration options as needed
-});
+import { redisClient } from "../..";
 
 function storeStateData(key, stateData) {
     redisClient.exists(key, (err, exists) => {

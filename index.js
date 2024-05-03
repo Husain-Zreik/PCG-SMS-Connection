@@ -6,7 +6,6 @@ import express from 'express';
 import cors from 'cors';
 import http from 'http';
 // import pm2 from 'pm2';
-// import { deserializeState, resumeProcesses, retrieveStateData, serializeState, storeStateData } from './src/store/redis.js';
 
 const ipAddress = process.env.NODE_HOST;
 const port = process.env.NODE_PORT;
@@ -18,18 +17,6 @@ app.use('/sms', smsRouter);
 
 const server = http.createServer(app);
 
-// process.on('exit', () => {
-//     const stateData = serializeState();
-//     storeStateData(stateData);
-// });
-
-// process.on('uncaughtException', (err) => {
-//     console.error('Uncaught exception:', err);
-//     const stateData = serializeState();
-//     storeStateData(stateData);
-//     process.exit(1);
-// });
-
 server.listen(port, ipAddress, (err) => {
     if (err) {
         console.error('Error starting HTTP server:', err);
@@ -37,6 +24,19 @@ server.listen(port, ipAddress, (err) => {
     }
     console.log(`HTTP Server running at http://${ipAddress}:${port}/`);
     startSMPPServer();
+});
+
+export const redisClient = redis.createClient({
+    host: 'localhost',
+    port: 6379,
+});
+
+redisClient.on('connect', () => {
+    console.log('Connected to Redis');
+});
+
+redisClient.on('error', (err) => {
+    console.error('Redis error:', err);
 });
 
 connection.connect((err) => {
