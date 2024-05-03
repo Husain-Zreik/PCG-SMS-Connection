@@ -28,7 +28,7 @@ server.listen(port, ipAddress, (err) => {
 });
 
 export const redisClient = redis.createClient({
-    host: 'localhost',
+    host: '127.0.0.1',
     port: 6379,
 });
 

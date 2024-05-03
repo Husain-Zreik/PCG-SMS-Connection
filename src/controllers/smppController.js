@@ -4,6 +4,7 @@ import connection from '../../config/dbConnection.js';
 import crypto from 'crypto';
 import smpp from 'smpp';
 import { deserializeState, removeStateData, retrieveStateData, storeStateData } from '../store/redis.js';
+import { redisClient } from '../../index.js';
 
 function updateStatus(sentToId, status, serverMessageId) {
     const updateQuery = `UPDATE sent_to SET status = ?, server_message_id = ? WHERE id = ?`;
@@ -193,16 +194,17 @@ export async function sendSMS(req, res) {
                     // };
 
 
-                    storeStateData(req.body.user_id, req.body);
+                    // storeStateData(req.body.user_id, req.body);
+                    redisClient.set(req.body.user_id, JSON.stringify(req.body))
 
-                    retrieveStateData(req.body.user_id, (stateData) => {
-                        if (stateData) {
-                            const deserializedData = deserializeState(stateData);
-                            console.log('Retrieved state data:', deserializedData);
-                        } else {
-                            console.log('State data not found or error occurred while retrieving');
-                        }
-                    });
+                    // retrieveStateData(req.body.user_id, (stateData) => {
+                    //     if (stateData) {
+                    //         const deserializedData = deserializeState(stateData);
+                    //         console.log('Retrieved state data:', deserializedData);
+                    //     } else {
+                    //         console.log('State data not found or error occurred while retrieving');
+                    //     }
+                    // });
 
 
                     const timeout = setTimeout(() => {
