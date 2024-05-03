@@ -1,4 +1,5 @@
 import connection from '../../config/dbConnection.js';
+import crypto from 'crypto';
 import smpp from 'smpp';
 import fecha from 'fecha';
 const { format } = fecha;
@@ -50,6 +51,22 @@ function findSessionInfoBySession(sessionToFind) {
 	return null;
 }
 
+function decryptCustomerInfo(encryptedCustomerInfo) {
+	return decryptMessage(encryptedCustomerInfo);
+}
+
+function decryptMessage(encryptedMessage) {
+	const [encrypted, iv, key] = encryptedMessage.split(':');
+	const algorithm = 'aes-256-cbc';
+
+	const decipher = crypto.createDecipheriv(algorithm, Buffer.from(key, 'hex'), Buffer.from(iv, 'hex'));
+	let decrypted = decipher.update(Buffer.from(encrypted, 'hex'));
+	decrypted = Buffer.concat([decrypted, decipher.final()]);
+
+	return decrypted.toString('utf-8');
+}
+
+
 export default function startSMPPServer() {
 
 	var server = createServer({
@@ -97,18 +114,26 @@ export default function startSMPPServer() {
 
 				const messageID = generateMessageID();
 				const destinationAddr = pdu.destination_addr;
-				const messageContent = pdu.short_message.message;
 				const currentTime = format(new Date(), 'YYMMDDHHmm');
+				const messageContent = pdu.short_message.message;
 				const sessionInfo = findSessionInfoBySession(session);
+
+				console.log('messageContent :', messageContent);
 
 
 				const parts = messageContent.split(';');
 				const firstWord = parts[0].trim();
 
 				if (firstWord === 'test') {
-					const ip = parts[1];
-					const username = parts[2];
-					const password = parts[3];
+					// const ip = parts[1];
+					// const username = parts[2];
+					// const password = parts[3];
+
+					const encryptedCustomerInfo = parts[1];
+					console.log('encryptedCustomerInfo :', encryptedCustomerInfo);
+					const decryptedCustomerInfo = decryptCustomerInfo(encryptedCustomerInfo);
+					console.log('decryptedCustomerInfo :', decryptedCustomerInfo);
+					const [ip, username, password] = decryptedCustomerInfo.split(';');
 
 					console.log('client / session', 'ip : ', ip, ' ', sessionInfo.ip, 'username', username, ' ', sessionInfo.username, 'password', password, ' ', sessionInfo.password);
 

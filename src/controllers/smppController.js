@@ -1,6 +1,7 @@
-import smpp from 'smpp';
-import connection from '../../config/dbConnection.js';
 import { addBindCredentials, closeAllSessions } from '../services/smppServer.js';
+import connection from '../../config/dbConnection.js';
+import crypto from 'crypto';
+import smpp from 'smpp';
 
 function updateStatus(sentToId, status, serverMessageId) {
     const updateQuery = `UPDATE sent_to SET status = ?, server_message_id = ? WHERE id = ?`;
@@ -24,6 +25,20 @@ function updateIsDelivered(receiptedMessageId) {
     });
 }
 
+function encryptCustomerInfo(customer) {
+    const customerInfo = `${customer.ip};${customer.username};${customer.password}`;
+    const encryptedCustomerInfo = encryptMessage(customerInfo);
+    return encryptedCustomerInfo;
+}
+
+function encryptMessage(message, key) {
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key), iv);
+    let encrypted = cipher.update(message, 'utf-8', 'hex');
+    encrypted += cipher.final('hex');
+    return `${iv.toString('hex')}:${encrypted}`;
+}
+
 async function testConnection(req, testN, session, maxAttempts = 10, currentAttempt = 1) {
     return new Promise((resolve, reject) => {
         console.log(`test : `, currentAttempt);
@@ -33,10 +48,13 @@ async function testConnection(req, testN, session, maxAttempts = 10, currentAtte
                 return;
             }
 
+            const encryptedCustomerInfo = encryptCustomerInfo(req.body.customer);
+            console.log('encryptedCustomerInfo : ', encryptedCustomerInfo);
+
             session.submit_sm({
                 destination_addr: testN,
-                // destination_addr: "96171392992",
-                short_message: `test;${req.body.customer.ip};${req.body.customer.username};${req.body.customer.password}`,
+                // short_message: `test;${req.body.customer.ip};${req.body.customer.username};${req.body.customer.password}`,
+                short_message: `test;${encryptedCustomerInfo}`,
                 registered_delivery: 1,
             }, async (submitPdu) => {
                 if (submitPdu.command_status === 0) {
