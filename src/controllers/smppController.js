@@ -126,7 +126,7 @@ export async function sendSMS(req, res) {
             });
         });
 
-        await addBindCredentials(req.body.user_id);
+        // await addBindCredentials(req.body.user_id);
 
         await new Promise((resolve, reject) => {
             session.on('connect', () => {
