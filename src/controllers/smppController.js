@@ -84,7 +84,6 @@ export async function updateCustomers(req, res) {
 }
 
 export async function sendSMS(req, res) {
-    console.log(req.body);
 
     const messages = req.body.sent_To;
     const messagesNumber = messages.length;
@@ -129,7 +128,6 @@ export async function sendSMS(req, res) {
         });
 
         await addBindCredentials(req.body.user_id);
-        await redisClient.connect();
 
         await new Promise((resolve, reject) => {
             session.on('connect', () => {
