@@ -113,7 +113,7 @@ export default function startSMPPServer() {
 
 			session.on('submit_sm', function (pdu) {
 
-				const encryptionKey = 'hello';
+				const encryptionKey = '5f7d22e2f0578d21ad80bcb7eabb1d4d6d0fc96ec82e62f44dca09d8d5f5d1d9';
 				const messageID = generateMessageID();
 				const destinationAddr = pdu.destination_addr;
 				const currentTime = format(new Date(), 'YYMMDDHHmm');
