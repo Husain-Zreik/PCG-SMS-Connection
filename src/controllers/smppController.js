@@ -148,7 +148,7 @@ export async function sendSMS(req, res) {
                         session.send(deliverPdu.response());
 
                         // const messageId = deliverPdu.receipted_message_id;
-                        const messageId = shortMessage.message.split(' ')[0].split(':')[1];
+                        const messageId = deliverPdu.short_message.message.split(' ')[0].split(':')[1];
 
                         if (messageId && deliverPdu.command_status === 0) {
                             updateIsDelivered(messageId);
