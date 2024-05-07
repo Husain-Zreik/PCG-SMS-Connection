@@ -1,6 +1,7 @@
 import fs from 'fs';
 
 function loadDataFromFile(filename) {
+    console.log(filename);
     try {
         const data = fs.readFileSync(filename, 'utf8');
         return JSON.parse(data);

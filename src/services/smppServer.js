@@ -10,8 +10,8 @@ const { createServer } = smpp;
 let counter = 0;
 let bindCredentials = {};
 let activeSessionsGroups = {};
-const counterFilePath = '../../startup/counter.json';
-const credentialsFilePath = '../../startup/credentials.json';
+const counterFilePath = '../startup/counter.json';
+const credentialsFilePath = 'credentials.json';
 const sessionsFilePath = '../../startup/sessions.json';
 
 function incrementCounter() {
