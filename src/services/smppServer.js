@@ -3,7 +3,7 @@ import connection from '../../config/dbConnection.js';
 import crypto from 'crypto';
 import smpp from 'smpp';
 import fecha from 'fecha';
-import { loadDataFromFile } from './store.js';
+import { loadDataFromFile, saveDataToFile } from './store.js';
 const { format } = fecha;
 const { createServer } = smpp;
 
