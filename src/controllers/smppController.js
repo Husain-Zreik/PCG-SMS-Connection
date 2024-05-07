@@ -196,6 +196,7 @@ export async function sendSMS(req, res) {
                     for (let i = 0; i < messagesNumber; i++) {
                         const message = messages[i];
                         let isSent;
+                        let failure = 0;
                         await new Promise((innerResolve) => {
                             setTimeout(() => {
                                 session.submit_sm({
@@ -210,12 +211,25 @@ export async function sendSMS(req, res) {
                                         updateStatus(message.id, 'sent', submitPdu.message_id);
                                         messagesSuccess++;
                                         isSent = 1;
+                                        failure = 0;
                                         console.log(`${messagesSuccess} out of ${messagesNumber} messages sent successfully`);
                                     } else {
                                         console.error(`Error sending SMS to ${message.number}:`, submitPdu.command_status);
                                         messagesFailed++;
                                         isSent = 0;
+                                        failure++;
                                         updateStatus(message.id, 'failed', submitPdu.message_id);
+                                    }
+
+                                    if (failure === 5) {
+                                        resolve({
+                                            code: 500,
+                                            message: 'More than 10 messages failed to be sent. Connection Error ...',
+                                            total: messagesNumber,
+                                            sent: messagesSuccess,
+                                            delivered: deliveredMessages,
+                                            info_message: `${messagesSuccess} out of ${messagesNumber} messages sent successfully.\n${deliveredMessages} out of ${messagesSuccess} messages delivered successfully.`
+                                        })
                                     }
 
                                     if (i === messagesNumber - 1) {
