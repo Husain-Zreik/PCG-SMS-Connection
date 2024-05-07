@@ -273,7 +273,29 @@ export async function addBindCredentials(userId) {
 	}
 }
 
-export async function closeAllSessions(userId) {
+export async function closeAllSessions() {
+	try {
+		console.log("closing all sessions :");
+		for (const userId in activeSessionsGroups) {
+			if (activeSessionsGroups.hasOwnProperty(userId)) {
+				const sessions = activeSessionsGroups[userId];
+				sessions.forEach(sessionInfo => {
+					const session = sessionInfo.session;
+					session.unbind(() => {
+						session.close();
+					});
+				});
+				delete activeSessionsGroups[userId];
+				console.log("Removed Active Sessions for user:", userId);
+			}
+		}
+	} catch (error) {
+		console.error("An error occurred while closing sessions:", error);
+	}
+}
+
+
+export async function closeUserSessions(userId) {
 	try {
 		if (activeSessionsGroups[userId]) {
 			activeSessionsGroups[userId].forEach(sessionInfo => {

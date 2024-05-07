@@ -1,4 +1,4 @@
-import { addBindCredentials, closeAllSessions, validateEncryptionKey } from '../services/smppServer.js';
+import { addBindCredentials, closeUserSessions, validateEncryptionKey } from '../services/smppServer.js';
 import { encryptionKey } from '../../config/smppConfig.js';
 import connection from '../../config/dbConnection.js';
 import crypto from 'crypto';
@@ -71,7 +71,7 @@ async function testConnection(req, encryptedCustomerInfo, testN, session, maxAtt
 export async function updateCustomers(req, res) {
     try {
         console.log("update customers")
-        await closeAllSessions(req.body.user_id);
+        await closeUserSessions(req.body.user_id);
 
         await addBindCredentials(req.body.user_id);
 
@@ -115,6 +115,10 @@ export async function sendSMS(req, res) {
                 message: err.message,
                 error: err
             });
+        });
+
+        session.on('close', () => {
+            console.log("Connection closed by server");
         });
 
         session.once('uncaughtException', (err) => {
@@ -242,11 +246,6 @@ export async function sendSMS(req, res) {
                                 });
                             });
                     }
-
-                    session.on('close', () => {
-                        console.log("Connection closed by server");
-                        resolve();
-                    });
                 });
             });
         }).then(result => {

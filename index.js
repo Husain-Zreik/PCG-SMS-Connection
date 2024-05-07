@@ -1,4 +1,4 @@
-import startSMPPServer, { restoreData } from './src/services/smppServer.js';
+import startSMPPServer, { closeAllSessions, restoreData } from './src/services/smppServer.js';
 import connection from './config/dbConnection.js';
 import smsRouter from './src/routes/smsRoutes.js';
 import bodyParser from 'body-parser';
@@ -34,7 +34,9 @@ connection.connect((err) => {
     console.log('Connected to MySQL database successfully!');
 });
 
-process.on('SIGINT', () => {
+process.on('SIGINT', async () => {
+    await closeAllSessions();
+
     connection.end((err) => {
         if (err) {
             console.error('Error closing MySQL connection:', err);
