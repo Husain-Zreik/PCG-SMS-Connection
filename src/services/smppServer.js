@@ -25,9 +25,21 @@ function saveCredentials(credentials) {
 }
 
 function saveActiveSessions(sessions) {
-	activeSessionsGroups = sessions;
-	saveDataToFile(sessionsFilePath, sessions);
+	const sessionsWithoutSessionAttr = {};
+	for (const userId in sessions) {
+		if (sessions.hasOwnProperty(userId)) {
+			const userSessions = sessions[userId].map(session => {
+				const { session: omit, ...sessionInfo } = session;
+				return sessionInfo;
+			});
+			sessionsWithoutSessionAttr[userId] = userSessions;
+		}
+	}
+
+	activeSessionsGroups = sessionsWithoutSessionAttr;
+	saveDataToFile(sessionsFilePath, sessionsWithoutSessionAttr);
 }
+
 
 export function restoreData() {
 	counter = loadDataFromFile(counterFilePath) || 0;
