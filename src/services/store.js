@@ -1,15 +1,19 @@
 import fs from 'fs';
 
 function loadDataFromFile(filename) {
-    console.log(filename);
     try {
         const data = fs.readFileSync(filename, 'utf8');
+        if (!data.trim()) {
+            console.log('File is empty:', filename);
+            return null;
+        }
         return JSON.parse(data);
     } catch (error) {
         console.error('Error loading data from file:', error);
         return null;
     }
 }
+
 
 function saveDataToFile(filename, data) {
     try {
