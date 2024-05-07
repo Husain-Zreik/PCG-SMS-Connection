@@ -3,16 +3,44 @@ import connection from '../../config/dbConnection.js';
 import crypto from 'crypto';
 import smpp from 'smpp';
 import fecha from 'fecha';
+import { loadDataFromFile } from './store.js';
 const { format } = fecha;
 const { createServer } = smpp;
 
 let counter = 0;
 let bindCredentials = {};
-const activeSessionsGroups = {};
+let activeSessionsGroups = {};
+const counterFilePath = '../../startup/counter.json';
+const credentialsFilePath = '../../startup/credentials.json';
+const sessionsFilePath = '../../startup/sessions.json';
+
+function incrementCounter() {
+	counter++;
+	saveDataToFile(counterFilePath, counter);
+}
+
+function saveCredentials(credentials) {
+	bindCredentials = credentials;
+	saveDataToFile(credentialsFilePath, credentials);
+}
+
+function saveActiveSessions(sessions) {
+	activeSessionsGroups = sessions;
+	saveDataToFile(sessionsFilePath, sessions);
+}
+
+export function restoreData() {
+	counter = loadDataFromFile(counterFilePath) || 0;
+	console.log(counter);
+	bindCredentials = loadDataFromFile(credentialsFilePath) || {};
+	console.log('bindCredentials: ', bindCredentials);
+	activeSessionsGroups = loadDataFromFile(sessionsFilePath) || {};
+	console.log('activeSessionsGroups :', activeSessionsGroups);
+}
 
 function generateMessageID() {
 	const timestamp = new Date().toISOString().replace(/\D/g, '').slice(0, -3);
-	counter++;
+	incrementCounter()
 
 	return `${timestamp}${counter.toString().padStart(3, '0')}`;
 }
@@ -111,6 +139,7 @@ export default function startSMPPServer() {
 						ip: ipv4Part,
 					};
 					activeSessionsGroups[credential.user_id].push(sessionInfo);
+					saveActiveSessions(activeSessionsGroups)
 					validCredentials = true;
 					break;
 				}
@@ -195,6 +224,7 @@ export default function startSMPPServer() {
 					const index = activeSessionsGroups[key].findIndex(sessionInfo => sessionInfo.sessionId === session._id);
 					if (index !== -1) {
 						activeSessionsGroups[key].splice(index, 1);
+						saveActiveSessions(activeSessionsGroups)
 						console.log(`Removed session with sessionId ${session._id} from activeSessionsGroups[${key}]`);
 					}
 				} else {
@@ -246,6 +276,7 @@ export async function addBindCredentials(userId) {
 				port: customer.port
 			};
 		});
+		saveCredentials(bindCredentials);
 		console.log('Credentials added for customers:', Object.keys(bindCredentials));
 		console.log('bindCredentials:', bindCredentials);
 	} catch (error) {
@@ -263,6 +294,7 @@ export async function closeAllSessions(userId) {
 				});
 			});
 			delete activeSessionsGroups[userId];
+			saveActiveSessions(activeSessionsGroups)
 			console.log("Removed Active Sessions for user:", userId);
 		} else {
 			console.log("No active sessions found for the user:", userId);
