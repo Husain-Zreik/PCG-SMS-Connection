@@ -9,10 +9,9 @@ const { createServer } = smpp;
 
 let counter = 0;
 let bindCredentials = {};
-let activeSessionsGroups = {};
+const activeSessionsGroups = {};
 const counterFilePath = 'startup/counter.json';
 const credentialsFilePath = 'startup/credentials.json';
-const sessionsFilePath = 'startup/sessions.json';
 
 function incrementCounter() {
 	counter++;
@@ -24,30 +23,10 @@ function saveCredentials(credentials) {
 	saveDataToFile(credentialsFilePath, credentials);
 }
 
-function saveActiveSessions(sessions) {
-	const sessionsWithoutSessionAttr = {};
-	for (const userId in sessions) {
-		if (sessions.hasOwnProperty(userId)) {
-			const userSessions = sessions[userId].map(session => {
-				const { session: omit, ...sessionInfo } = session;
-				return sessionInfo;
-			});
-			sessionsWithoutSessionAttr[userId] = userSessions;
-		}
-	}
-
-	activeSessionsGroups = sessionsWithoutSessionAttr;
-	saveDataToFile(sessionsFilePath, sessionsWithoutSessionAttr);
-}
-
-
 export function restoreData() {
 	counter = loadDataFromFile(counterFilePath) || 0;
-	console.log(counter);
 	bindCredentials = loadDataFromFile(credentialsFilePath) || {};
 	console.log('bindCredentials: ', bindCredentials);
-	activeSessionsGroups = loadDataFromFile(sessionsFilePath) || {};
-	console.log('activeSessionsGroups :', activeSessionsGroups);
 }
 
 function generateMessageID() {
@@ -151,7 +130,6 @@ export default function startSMPPServer() {
 						ip: ipv4Part,
 					};
 					activeSessionsGroups[credential.user_id].push(sessionInfo);
-					saveActiveSessions(activeSessionsGroups)
 					validCredentials = true;
 					break;
 				}
@@ -236,7 +214,6 @@ export default function startSMPPServer() {
 					const index = activeSessionsGroups[key].findIndex(sessionInfo => sessionInfo.sessionId === session._id);
 					if (index !== -1) {
 						activeSessionsGroups[key].splice(index, 1);
-						saveActiveSessions(activeSessionsGroups)
 						console.log(`Removed session with sessionId ${session._id} from activeSessionsGroups[${key}]`);
 					}
 				} else {
@@ -306,7 +283,6 @@ export async function closeAllSessions(userId) {
 				});
 			});
 			delete activeSessionsGroups[userId];
-			saveActiveSessions(activeSessionsGroups)
 			console.log("Removed Active Sessions for user:", userId);
 		} else {
 			console.log("No active sessions found for the user:", userId);
