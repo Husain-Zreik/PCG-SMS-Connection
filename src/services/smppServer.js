@@ -216,8 +216,6 @@ export default function startSMPPServer() {
 						activeSessionsGroups[key].splice(index, 1);
 						console.log(`Removed session with sessionId ${session._id} from activeSessionsGroups[${key}]`);
 					}
-				} else {
-					console.log('Session key not found for sessionId:', session._id);
 				}
 			});
 
